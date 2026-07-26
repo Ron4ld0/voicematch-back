@@ -1,3 +1,45 @@
+# VoiceMatch Backend
+
+API construída com **FastAPI** para a plataforma de recrutamento com entrevista por IA, integrada ao **Supabase** para banco de dados e autenticação, utilizando **Alembic** para migrações do banco.
+
+## 🚀 Como Rodar Localmente
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/Ron4ld0/voicematch-back.git
+cd voicematch-back
+```
+
+2. Crie e ative um ambiente virtual:
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/Mac
+# source .venv/bin/activate
+```
+
+3. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+4. Variáveis de ambiente:
+Copie o arquivo `.env.example` para `.env` e preencha com suas credenciais.
+
+5. Execute as migrações:
+```bash
+alembic upgrade head
+```
+
+6. Inicie o servidor:
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+A documentação da API (Swagger) estará disponível em `http://localhost:8000/docs`.
+
+---
+
 # Modelo de Dados — Plataforma de Recrutamento com Entrevista por IA
 
 Este documento descreve o modelo de dados da plataforma, implementado em PostgreSQL via Supabase. O esquema cobre o fluxo completo: cadastro de usuários, publicação de vagas, candidaturas, entrevistas conduzidas por IA (com perguntas e respostas em áudio) e o feedback final gerado.
