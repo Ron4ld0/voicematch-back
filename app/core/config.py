@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Áudio e IA
     AUDIO_UPLOAD_DIR: str = "media/audio"
     OPENAI_API_KEY: str | None = None
+    AI_SERVICE_URL: str = "http://localhost:8001"
 
     # CORS
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "*"]
