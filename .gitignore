@@ -9,3 +9,6 @@ env/
 # Cache do Python
 __pycache__/
 *.pyc
+
+# Arquivos de Mídia Uploaded
+media/
