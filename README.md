@@ -1,6 +1,6 @@
 # VoiceMatch Backend
 
-API construída com **FastAPI** para a plataforma de recrutamento com entrevista por IA, integrada ao **Supabase** para banco de dados e autenticação, utilizando **Alembic** para migrações do banco.
+API construída com **FastAPI** para a plataforma de recrutamento com entrevista por IA, integrada ao **PostgreSQL** (via Docker) para banco de dados, utilizando **Alembic** para migrações do banco.
 
 ## 🚀 Como Rodar Localmente
 
@@ -25,7 +25,10 @@ pip install -r requirements.txt
 ```
 
 4. Variáveis de ambiente:
-Copie o arquivo `.env.example` para `.env` e preencha com suas credenciais.
+Copie o arquivo `.env.example` para `.env` e preencha com as credenciais do seu banco de dados PostgreSQL. Para rodar o banco de dados via Docker, você pode usar o `docker-compose.yml` já incluído no projeto:
+```bash
+docker-compose up -d
+```
 
 5. Execute as migrações:
 ```bash
@@ -42,7 +45,7 @@ A documentação da API (Swagger) estará disponível em `http://localhost:8000/
 
 # Modelo de Dados — Plataforma de Recrutamento com Entrevista por IA
 
-Este documento descreve o modelo de dados da plataforma, implementado em PostgreSQL via Supabase. O esquema cobre o fluxo completo: cadastro de usuários, publicação de vagas, candidaturas, entrevistas conduzidas por IA (com perguntas e respostas em áudio) e o feedback final gerado.
+Este documento descreve o modelo de dados da plataforma, implementado em PostgreSQL via Docker. O esquema cobre o fluxo completo: cadastro de usuários, publicação de vagas, candidaturas, entrevistas conduzidas por IA (com perguntas e respostas em áudio) e o feedback final gerado.
 
 ## Visão geral do fluxo
 
@@ -55,7 +58,7 @@ Pessoa (auth.users)
                                     feedbacks)
 ```
 
-1. Um usuário se cadastra (Supabase Auth) e vira `Pessoa`, especializado em `Recrutador` ou `Candidato`.
+1. Um usuário se cadastra e vira `Pessoa`, especializado em `Recrutador` ou `Candidato`.
 2. O `Recrutador` cria uma `Vaga`.
 3. O `Candidato` se candidata, gerando uma `Candidatura`.
 4. A `Candidatura` origina uma `Entrevista`.
@@ -68,11 +71,11 @@ Pessoa (auth.users)
 ## Tabelas
 
 ### `pessoa`
-Tabela base de qualquer usuário da plataforma. O `id` é o mesmo `id` do Supabase Auth (`auth.users`), então não existe cadastro de senha/login separado — a autenticação é 100% delegada ao Supabase.
+Tabela base de qualquer usuário da plataforma.
 
 | Campo | Tipo | Observação |
 |---|---|---|
-| `id` | uuid (PK, FK → `auth.users.id`) | Vínculo direto com o usuário autenticado |
+| `id` | uuid (PK) | Vínculo direto com o usuário |
 | `nome_completo` | varchar | |
 | `email` | varchar, único | |
 | `telefone` | varchar | |
@@ -95,7 +98,7 @@ Guarda dados exclusivos de quem se candidata a vagas.
 | Campo | Tipo | Observação |
 |---|---|---|
 | `id` | uuid (PK, FK → `pessoa.id`) | Mesmo id da pessoa |
-| `curriculo_url` | text | Link para o currículo (ex: arquivo no Supabase Storage) |
+| `curriculo_url` | text | Link para o currículo |
 | `resumo_profissional` | text | |
 | `experiencias` | jsonb | Lista livre de experiências profissionais |
 | `tecnologias` | jsonb | Lista livre de tecnologias/skills do candidato |
@@ -169,7 +172,7 @@ A resposta em áudio do candidato para uma pergunta específica, junto com a tra
 |---|---|---|
 | `id` | uuid (PK) | |
 | `pergunta_id` | uuid (FK → `pergunta_entrevista.id`), único | Uma resposta por pergunta |
-| `audio_url` | text | Link para o arquivo de áudio (ex: Supabase Storage) |
+| `audio_url` | text | Link para o arquivo de áudio |
 | `transcricao` | text | Texto transcrito do áudio (via STT) |
 | `metricas` | jsonb | Sinais extraídos: confiança, nervosismo, vícios de linguagem, uso de palavrão, etc. |
 | `data_resposta` | timestamptz | |
@@ -181,7 +184,7 @@ A resposta em áudio do candidato para uma pergunta específica, junto com a tra
 ## Diagrama de relacionamentos (resumo)
 
 ```
-auth.users (Supabase)
+usuários
    │ 1:1
    ▼
 pessoa
@@ -208,7 +211,7 @@ pessoa
 
 ## Pontos em aberto / próximos passos
 
-- **RLS (Row Level Security):** ainda não definido. Depende de quem acessa o Supabase diretamente (só o back-end FastAPI via service role, ou também o Next.js direto).
-- **Trigger de criação de `pessoa`:** falta decidir se a linha em `pessoa` é criada via trigger no `auth.users` ou manualmente pelo back-end no momento do signup.
+- **RLS (Row Level Security):** ainda não definido. Depende da arquitetura de acesso ao banco (só o back-end FastAPI ou acessos diretos).
+- **Trigger de criação de `pessoa`:** falta decidir se a linha em `pessoa` é criada via trigger ou manualmente pelo back-end no momento do signup.
 - **Skills normalizadas:** hoje `requisitos_hard`/`requisitos_soft` (em `vaga`) e `tecnologias` (em `candidato`) são `jsonb` livres. Se no futuro for necessário buscar/filtrar vagas por skill específica de forma estruturada, considerar normalizar em uma tabela `skill` + tabela associativa.
 - **CPF:** avaliar criptografia em repouso ou mascaramento em logs, por ser dado sensível sob a LGPD.
