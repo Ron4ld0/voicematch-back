@@ -1,3 +1,4 @@
+from __future__ import annotations
 import uuid
 from typing import Optional, List, Dict, Any
 from sqlalchemy import String, Text
