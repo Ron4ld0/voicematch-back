@@ -24,5 +24,4 @@ class CandidaturaResponse(BaseModel):
     status: StatusCandidatura
     data_candidatura: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

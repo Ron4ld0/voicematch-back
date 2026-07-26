@@ -32,5 +32,4 @@ class VagaResponse(VagaBase):
     recrutador_id: UUID
     data_criacao: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

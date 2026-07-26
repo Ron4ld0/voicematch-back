@@ -20,8 +20,7 @@ class RespostaResponse(BaseModel):
     metricas: Optional[Dict[str, Any]]
     data_resposta: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Pergunta de Entrevista
@@ -38,8 +37,7 @@ class PerguntaResponse(BaseModel):
     data_criacao: datetime
     resposta: Optional[RespostaResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Entrevista
@@ -71,5 +69,4 @@ class EntrevistaResponse(EntrevistaBase):
     data_criacao: datetime
     perguntas: List[PerguntaResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

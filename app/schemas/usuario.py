@@ -14,8 +14,7 @@ class RecrutadorResponse(BaseModel):
     empresa: str
     cargo: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Esquemas de Usuario (sempre recrutador)
@@ -46,5 +45,4 @@ class UsuarioResponse(UsuarioBase):
     data_criacao: datetime
     recrutador: Optional[RecrutadorResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
