@@ -12,8 +12,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
-    # Áudio
+    # Áudio e IA
     AUDIO_UPLOAD_DIR: str = "media/audio"
+    OPENAI_API_KEY: str | None = None
 
     # CORS
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "*"]

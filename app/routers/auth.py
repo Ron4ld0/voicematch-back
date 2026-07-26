@@ -39,7 +39,7 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(subject=user.email)
+    access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 
@@ -63,7 +63,7 @@ def login_json(login_data: LoginRequest, db: Session = Depends(get_db)):
             detail="Email ou senha incorretos",
         )
 
-    access_token = create_access_token(subject=user.email)
+    access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 
