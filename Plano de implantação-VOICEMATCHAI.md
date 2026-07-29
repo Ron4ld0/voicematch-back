@@ -1,9 +1,3 @@
-## 📌 Fase 1: Desacoplamento e Infraestrutura Base
-
-Nesta etapa o foco é preparar o terreno, garantindo que a arquitetura de três repositórios e o
-
-banco de dados estejam orquestrados.
-
 - [ ] Criar Repositórios Git: Inicializar os repositórios separados para voicematch-front, voicematch-back e voicematch-services.
 
 - [ ] Configurar Docker Local: Criar o arquivo docker-compose.yml na raiz do voicematch-back para rodar a imagem do PostgreSQL.
@@ -37,12 +31,3 @@ O foco aqui é garantir a qualidade da interação do candidato com o MVP.
 - [ ] Testes de Fluxo Ponta a Ponta (E2E): Testar o caminho feliz completo (inscrição -> gravação -> avaliação final) para garantir a estabilidade do fluxo entre o Front, Gateway e Serviços de IA.
 
 - [ ] Validação UX de Conclusão: Assegurar que, ao finalizar a entrevista, o sistema
-
-## ⚙️ Fase 2: Desenvolvimento do Backend e Microserviço de IA
-
-## 🎨 Fase 3: Refinamento do Frontend e Experiência (UX)
-
-
-apresente um feedback claro que gere um sentimento de conclusão ao candidato.
-
-Gostaria de começar gerando a estrutura base do docker-compose.yml para o banco de dados e os volumes (Fase 1), ou prefere ver a modelagem inicial das tabelas com SQLAlchemy (Fase 2)?
