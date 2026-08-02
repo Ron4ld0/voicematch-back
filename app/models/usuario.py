@@ -22,7 +22,6 @@ class Usuario(Base):
     )
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     telefone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    cpf: Mapped[Optional[str]] = mapped_column(String(14), nullable=True, unique=True)
     tipo_usuario: Mapped[TipoUsuario] = mapped_column(
         SQLEnum(TipoUsuario, name="tipo_usuario_enum"),
         nullable=False,

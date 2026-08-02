@@ -81,7 +81,6 @@ Tabela base para autenticação (email e senha_hash).
 | `email` | varchar, único | Usado para login |
 | `senha_hash` | varchar | Senha criptografada |
 | `telefone` | varchar | |
-| `cpf` | varchar, único | Dado sensível (LGPD) |
 | `tipo_usuario` | enum (`recrutador`) | Define o perfil do usuário |
 | `data_criacao` | timestamptz | |
 
@@ -92,6 +91,7 @@ Guarda dados exclusivos de quem publica vagas.
 |---|---|---|
 | `id` | uuid (PK, FK → `usuario.id`) | Mesmo id do usuário |
 | `empresa` | varchar | |
+| `cnpj` | varchar(14) | Apenas dígitos; validado pelos dígitos verificadores. Não é único — vários recrutadores podem ser da mesma empresa |
 | `cargo` | varchar | |
 
 ### `candidato` (entidade independente)
@@ -209,4 +209,4 @@ candidato ──1:N──> candidatura ──1:N──> entrevista ──1:N─�
 - **Autenticação:** O sistema conta com registro nativo usando e-mail e hash de senha.
 - **Integração Candidato/Usuário:** Avaliar se no futuro o candidato precisará logar via tabela `usuario` ou se o acesso será diferente.
 - **Skills normalizadas:** Hoje `requisitos_hard`/`requisitos_soft` e `tecnologias` são `jsonb` livres.
-- **CPF:** Avaliar mascaramento/criptografia para estar de acordo com a LGPD.
+- **CPF removido:** o campo era coletado do recrutador mas nunca lido por nenhuma regra de negócio, e o candidato — a pessoa de fato avaliada — não o possuía. Pelo princípio da necessidade (LGPD, Art. 6º, III), foi removido. Para identificar o recrutador bastam e-mail e o `cnpj` da empresa. Se um dia houver contratação efetiva, o CPF pertence a `candidato` e deve ser coletado só nesse momento.

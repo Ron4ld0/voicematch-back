@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Áudio e IA
     AUDIO_UPLOAD_DIR: str = "media/audio"
-    OPENAI_API_KEY: str | None = None
+    OPENAI_API_KEY: Optional[str] = None
     AI_SERVICE_URL: str = "http://localhost:8001"
 
     # CORS

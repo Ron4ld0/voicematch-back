@@ -30,7 +30,6 @@ def create_usuario(db: Session, usuario_in: UsuarioCreate) -> Usuario:
         email=usuario_in.email,
         senha_hash=senha_hash,
         telefone=usuario_in.telefone,
-        cpf=usuario_in.cpf,
         tipo_usuario=TipoUsuario.recrutador,
     )
     db.add(db_usuario)
@@ -38,12 +37,16 @@ def create_usuario(db: Session, usuario_in: UsuarioCreate) -> Usuario:
 
     # Criar perfil de recrutador na mesma transação
     empresa = "Não especificada"
+    cnpj = None
     cargo = None
     if usuario_in.recrutador:
         empresa = usuario_in.recrutador.empresa
+        cnpj = usuario_in.recrutador.cnpj
         cargo = usuario_in.recrutador.cargo
 
-    db_recrutador = Recrutador(id=db_usuario.id, empresa=empresa, cargo=cargo)
+    db_recrutador = Recrutador(
+        id=db_usuario.id, empresa=empresa, cnpj=cnpj, cargo=cargo
+    )
     db.add(db_recrutador)
 
     db.commit()
