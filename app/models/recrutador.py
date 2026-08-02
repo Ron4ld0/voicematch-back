@@ -17,6 +17,8 @@ class Recrutador(Base):
         primary_key=True,
     )
     empresa: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Sem unique: vários recrutadores podem pertencer à mesma empresa.
+    cnpj: Mapped[Optional[str]] = mapped_column(String(14), nullable=True)
     cargo: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     # Relacionamento 1:1 com Usuario
