@@ -35,7 +35,7 @@ voicematch-back/
 │   └── services/         # Lógica de serviços externos (triagem_service.py, curriculo_parser.py)
 ├── tests/                # Testes unitários e de integração (pytest)
 ├── Dockerfile            # Imagem de produção da API
-├── docker-compose.yml    # Orquestração local (API + PostgreSQL)
+├── docker-compose.yml    # Orquestração local unificada (API, PostgreSQL, VoiceMatchServices, VoiceMatchFrontend)
 └── requirements.txt      # Dependências Python do projeto
 ```
 

@@ -24,8 +24,35 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql+psycopg://admin:admin_password@db:5432/voicematch_db
+      AI_SERVICE_URL: http://services:8001
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL_TRIAGEM: ${GROQ_MODEL_TRIAGEM:-llama-3.3-70b-versatile}
     volumes:
       - ./media/audio:/app/media/audio
+
+  services:
+    build:
+      context: ../../VoiceMatchServices
+    container_name: voicematch-services
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: 8001
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+
+  frontend:
+    build:
+      context: ../../VoiceMatchFrontend
+    container_name: voicematch-front
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
