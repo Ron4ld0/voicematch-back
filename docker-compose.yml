@@ -1,4 +1,4 @@
-version: '3.8'
+name: voicematch-mvp
 
 services:
   db:
@@ -57,3 +57,4 @@ services:
 volumes:
   postgres_data:
     name: voicematch_pg_data
+    external: true
