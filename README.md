@@ -2,44 +2,64 @@
 
 API construída com **FastAPI** para a plataforma de recrutamento com entrevista por IA, integrada ao **PostgreSQL** (via Docker) para banco de dados, utilizando **Alembic** para migrações do banco.
 
-## 🚀 Como Rodar Localmente
+## 🚀 Como Rodar o Projeto
 
-1. Clone o repositório:
+Você pode rodar o projeto de duas formas: no ambiente Python local ou subindo a aplicação completa (API + Banco) via Docker.
+
+### Opção A: Rodar Localmente com Python (Recomendado para Desenvolvimento)
+
+1. **Clone o repositório:**
 ```bash
 git clone https://github.com/Ron4ld0/voicematch-back.git
 cd voicematch-back
 ```
 
-2. Crie e ative um ambiente virtual:
+2. **Crie e ative um ambiente virtual:**
 ```bash
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
+# Windows (PowerShell)
+.\.venv\Scripts\activate
 # Linux/Mac
-# source .venv/bin/activate
+source .venv/bin/activate
 ```
 
-3. Instale as dependências:
+3. **Instale as dependências:**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Variáveis de ambiente:
-Copie o arquivo `.env.example` para `.env` e preencha com as credenciais do seu banco de dados PostgreSQL. Para rodar o banco de dados via Docker, você pode usar o `docker-compose.yml` já incluído no projeto:
+4. **Configuração do ambiente:**
+Copie o arquivo `.env.example` para `.env` e ajuste se necessário.
+Suba apenas o banco de dados PostgreSQL via Docker:
 ```bash
-docker-compose up -d
+docker compose up db -d
 ```
 
-5. Execute as migrações:
+5. **Execute as migrações do banco:**
 ```bash
 alembic upgrade head
 ```
 
-6. Inicie o servidor:
+6. **Inicie o servidor de desenvolvimento:**
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
-A documentação da API (Swagger) estará disponível em `http://localhost:8000/docs`.
+A documentação interativa da API (Swagger) estará em `http://localhost:8000/docs`.
+
+---
+
+### Opção B: Rodar Tudo via Docker Compose (API + Banco)
+
+1. Copie o arquivo `.env.example` para `.env`.
+2. Suba todos os serviços (API + PostgreSQL):
+```bash
+docker compose up --build -d
+```
+3. Execute as migrações dentro do container ou na sua máquina:
+```bash
+docker compose exec api alembic upgrade head
+```
+A API estará acessível em `http://localhost:8000`.
 
 ---
 
