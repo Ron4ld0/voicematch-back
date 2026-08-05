@@ -60,12 +60,13 @@ Candidato ──> Candidatura ──> Entrevista ──> PerguntaEntrevista ─�
 ```
 
 1. Um `Usuario` se cadastra (com email e senha). O sistema o classifica como `Recrutador` (tabela vinculada 1:1).
-2. O `Recrutador` cria uma `Vaga`.
-3. Um `Candidato` (que é uma entidade independente de `Usuario`) se candidata a uma vaga, gerando uma `Candidatura`.
-4. A `Candidatura` origina uma `Entrevista`.
-5. A `Entrevista` contém várias `PerguntaEntrevista`, geradas pela IA a partir dos dados da vaga.
-6. Cada pergunta recebe uma `RespostaEntrevista` em áudio, com transcrição e métricas comportamentais.
-7. Ao final, a `Entrevista` é atualizada com `score_geral` e os feedbacks (candidato e recrutador).
+2. O `Recrutador` cria uma `Vaga`, podendo definir um `score_minimo_triagem` para ativação do gate por IA.
+3. Um `Candidato` (que é uma entidade independente de `Usuario`) se candidata a uma vaga, gerando uma `Candidatura` (status inicial `pendente_triagem`).
+4. A IA analisa o currículo do candidato contra a vaga. Se o score obtido atingir ou superar o threshold, o status passa para `aprovada_triagem`, liberando a criação da `Entrevista` de voz. Caso contrário, assume `reprovada_triagem`.
+5. A `Candidatura` aprovada origina uma `Entrevista`.
+6. A `Entrevista` contém várias `PerguntaEntrevista`, geradas pela IA a partir dos dados da vaga.
+7. Cada pergunta recebe uma `RespostaEntrevista` em áudio, com transcrição e métricas comportamentais.
+8. Ao final, a `Entrevista` é atualizada com `score_geral` e os feedbacks (candidato e recrutador).
 
 ---
 
@@ -120,6 +121,7 @@ Vaga de emprego publicada por um recrutador.
 | `descricao_candidato_ideal` | text | Contexto extra para a IA gerar perguntas |
 | `requisitos_hard` | jsonb | |
 | `requisitos_soft` | jsonb | |
+| `score_minimo_triagem` | numeric(4,2) | Score mínimo (threshold) para aprovação na triagem de currículo por IA (null = sem gate ativo) |
 | `status` | enum (`ativa`, `pausada`, `encerrada`) | |
 | `data_criacao` | timestamptz | |
 
@@ -131,7 +133,10 @@ Registra a intenção de um candidato em uma vaga. Existe **antes** da entrevist
 | `id` | uuid (PK) | |
 | `vaga_id` | uuid (FK → `vaga.id`) | |
 | `candidato_id` | uuid (FK → `candidato.id`) | |
-| `status` | enum (`pendente`, `em_entrevista`, `avaliada`, `aprovada`, `rejeitada`) | |
+| `status` | enum (`pendente_triagem`, `aprovada_triagem`, `reprovada_triagem`, `em_entrevista`, `avaliada`, `aprovada`, `rejeitada`) | Estado da candidatura no fluxo de triagem e entrevista |
+| `score_triagem` | numeric(4,2) | Nota da triagem de currículo calculada pela IA |
+| `feedback_triagem` | jsonb | Feedback da triagem (pontos fortes, gaps, texto explicativo) |
+| `data_triagem` | timestamptz | Data/hora em que a triagem da IA foi realizada |
 | `data_candidatura` | timestamptz | |
 
 Constraint `unique (vaga_id, candidato_id)` impede duplicidade.
@@ -142,7 +147,7 @@ Uma tentativa de entrevista associada a uma candidatura.
 | Campo | Tipo | Observação |
 |---|---|---|
 | `id` | uuid (PK) | |
-| `candidatura_id` | uuid (FK → `candidatura.id`) | |
+| `candidatura_id` | uuid (FK → `candidatura.id`) | Permite criação apenas se candidatura possuir `status = aprovada_triagem` |
 | `status` | enum (`agendada`, `em_andamento`, `concluida`, `cancelada`) | |
 | `data_inicio` | timestamptz | |
 | `data_fim` | timestamptz | |
@@ -199,7 +204,7 @@ candidato ──1:N──> candidatura ──1:N──> entrevista ──1:N─�
 |---|---|
 | `tipo_usuario_enum` | `recrutador` |
 | `status_vaga_enum` | `ativa`, `pausada`, `encerrada` |
-| `status_candidatura_enum` | `pendente`, `em_entrevista`, `avaliada`, `aprovada`, `rejeitada` |
+| `status_candidatura_enum` | `pendente_triagem`, `aprovada_triagem`, `reprovada_triagem`, `em_entrevista`, `avaliada`, `aprovada`, `rejeitada` |
 | `status_entrevista_enum` | `agendada`, `em_andamento`, `concluida`, `cancelada` |
 
 ---
