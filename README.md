@@ -51,12 +51,12 @@ Este documento descreve o modelo de dados atualizado da plataforma, implementado
 
 ```
 Usuario
- └── Recrutador ──> Vaga
+ └── Recrutador ──> Vaga (score_minimo_triagem)
 
-Candidato ──> Candidatura ──> Entrevista ──> PerguntaEntrevista ──> RespostaEntrevista
-                  │                │
-               (vaga_id)      (score_geral,
-                               feedbacks)
+Candidato ──> Candidatura ──[Triagem IA (score & feedback)]──> Entrevista ──> PerguntaEntrevista ──> RespostaEntrevista
+                  │                                                  │
+              (vaga_id)                                         (score_geral,
+                                                                 feedbacks)
 ```
 
 1. Um `Usuario` se cadastra (com email e senha). O sistema o classifica como `Recrutador` (tabela vinculada 1:1).
@@ -189,11 +189,11 @@ A resposta em áudio, com transcrição e métricas.
 usuário
    │ 1:1
    ▼
-recrutador ──1:N──> vaga
+recrutador ──1:N──> vaga (score_minimo_triagem)
                       │
                     1:N
                       ▼
-candidato ──1:N──> candidatura ──1:N──> entrevista ──1:N──> pergunta_entrevista ──1:1──> resposta_entrevista
+candidato ──1:N──> candidatura ──[Triagem IA (aprovada_triagem)]──1:N──> entrevista ──1:N──> pergunta_entrevista ──1:1──> resposta_entrevista
 ```
 
 ---
