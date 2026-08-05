@@ -1,8 +1,11 @@
+import logging
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
 from app.core.database import get_db
+from app.models.enums import StatusCandidatura
 from app.schemas.candidatura import (
     CandidaturaCreate,
     CandidaturaStatusUpdate,
@@ -15,9 +18,13 @@ from app.crud.candidatura import (
     get_candidaturas_by_vaga,
     get_candidaturas_by_candidato,
     update_candidatura_status,
+    update_candidatura_triagem,
 )
 from app.crud.candidato import get_candidato
 from app.crud.vaga import get_vaga
+from app.services.triagem_service import analisar_curriculo
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/candidaturas", tags=["Candidaturas"])
 
@@ -26,7 +33,7 @@ router = APIRouter(prefix="/candidaturas", tags=["Candidaturas"])
     "", response_model=CandidaturaResponse, status_code=status.HTTP_201_CREATED
 )
 def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_db)):
-    """Cria uma nova candidatura vinculando um candidato a uma vaga."""
+    """Cria uma nova candidatura vinculando um candidato a uma vaga e executa a triagem automática por IA."""
     # 1. Validar se a vaga existe
     db_vaga = get_vaga(db, vaga_id=candidatura_in.vaga_id)
     if not db_vaga:
@@ -53,7 +60,51 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
             detail="Este candidato já se candidatou a esta vaga anteriormente.",
         )
 
-    return create_candidatura(db, candidatura_in=candidatura_in)
+    db_candidatura = create_candidatura(db, candidatura_in=candidatura_in)
+
+    # 4. Executar a triagem síncrona de currículo por IA
+    try:
+        resultado_triagem = analisar_curriculo(candidato=db_candidato, vaga=db_vaga)
+        score = resultado_triagem.get("score")
+        feedback = {
+            "pontos_fortes": resultado_triagem.get("pontos_fortes", []),
+            "gaps": resultado_triagem.get("gaps", []),
+            "feedback_texto": resultado_triagem.get("feedback_texto", ""),
+        }
+
+        # Verificar gate de aprovação contra o threshold da vaga
+        if db_vaga.score_minimo_triagem is None:
+            novo_status = StatusCandidatura.aprovada_triagem
+        elif score is not None and score >= float(db_vaga.score_minimo_triagem):
+            novo_status = StatusCandidatura.aprovada_triagem
+        else:
+            novo_status = StatusCandidatura.reprovada_triagem
+
+        db_candidatura = update_candidatura_triagem(
+            db,
+            db_candidatura=db_candidatura,
+            score_triagem=score,
+            feedback_triagem=feedback,
+            status=novo_status,
+            data_triagem=datetime.now(timezone.utc),
+        )
+    except Exception as e:
+        logger.warning(
+            f"Falha ao executar triagem por IA na candidatura '{db_candidatura.id}': {e}"
+        )
+        feedback_erro = {
+            "erro": f"falha na triagem automática, revisar manualmente: {str(e)}"
+        }
+        db_candidatura = update_candidatura_triagem(
+            db,
+            db_candidatura=db_candidatura,
+            score_triagem=None,
+            feedback_triagem=feedback_erro,
+            status=StatusCandidatura.pendente_triagem,
+            data_triagem=None,
+        )
+
+    return db_candidatura
 
 
 @router.get("/{id}", response_model=CandidaturaResponse)
