@@ -25,6 +25,7 @@ from app.crud.entrevista import (
     create_resposta,
     get_resposta_by_pergunta,
 )
+from app.models.enums import StatusCandidatura
 from app.crud.candidatura import get_candidatura
 
 router = APIRouter(tags=["Entrevistas"])
@@ -44,6 +45,11 @@ def register_entrevista(entrevista_in: EntrevistaCreate, db: Session = Depends(g
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="A candidatura especificada não existe.",
+        )
+    if db_candidatura.status != StatusCandidatura.aprovada_triagem:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A entrevista só pode ser criada se a candidatura estiver com status 'aprovada_triagem'.",
         )
     return create_entrevista(db, entrevista_in=entrevista_in)
 

@@ -11,6 +11,7 @@ class VagaBase(BaseModel):
     descricao_candidato_ideal: Optional[str] = None
     requisitos_hard: Optional[Dict[str, Any]] = None
     requisitos_soft: Optional[Dict[str, Any]] = None
+    score_minimo_triagem: Optional[float] = None
     status: StatusVaga
 
 
@@ -24,6 +25,7 @@ class VagaUpdate(BaseModel):
     descricao_candidato_ideal: Optional[str] = None
     requisitos_hard: Optional[Dict[str, Any]] = None
     requisitos_soft: Optional[Dict[str, Any]] = None
+    score_minimo_triagem: Optional[float] = None
     status: Optional[StatusVaga] = None
 
 

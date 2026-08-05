@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List, Optional
 from app.models.candidatura import Candidatura
+from app.models.enums import StatusCandidatura
 from app.schemas.candidatura import CandidaturaCreate, CandidaturaStatusUpdate
 
 
@@ -33,7 +34,7 @@ def create_candidatura(db: Session, candidatura_in: CandidaturaCreate) -> Candid
     db_candidatura = Candidatura(
         vaga_id=candidatura_in.vaga_id,
         candidato_id=candidatura_in.candidato_id,
-        status="pendente",
+        status=StatusCandidatura.pendente_triagem,
     )
     db.add(db_candidatura)
     db.commit()

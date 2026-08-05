@@ -1,8 +1,20 @@
 from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from sqlalchemy import String, Text, ForeignKey, DateTime, Enum as SQLEnum, func
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
+
+if TYPE_CHECKING:
+    from app.models.candidatura import Candidatura
+    from app.models.recrutador import Recrutador
+from sqlalchemy import (
+    String,
+    Text,
+    ForeignKey,
+    DateTime,
+    Numeric,
+    Enum as SQLEnum,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,6 +43,9 @@ class Vaga(Base):
     )
     requisitos_soft: Mapped[Optional[Dict[str, Any]]] = mapped_column(
         JSONB, nullable=True
+    )
+    score_minimo_triagem: Mapped[Optional[float]] = mapped_column(
+        Numeric(4, 2), nullable=True
     )
     status: Mapped[StatusVaga] = mapped_column(
         SQLEnum(StatusVaga, name="status_vaga_enum"), nullable=False

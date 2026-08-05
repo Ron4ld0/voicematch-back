@@ -12,7 +12,9 @@ class StatusVaga(str, Enum):
 
 
 class StatusCandidatura(str, Enum):
-    pendente = "pendente"
+    pendente_triagem = "pendente_triagem"
+    aprovada_triagem = "aprovada_triagem"
+    reprovada_triagem = "reprovada_triagem"
     em_entrevista = "em_entrevista"
     avaliada = "avaliada"
     aprovada = "aprovada"
