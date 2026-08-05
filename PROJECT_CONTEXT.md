@@ -10,6 +10,8 @@ O **VoiceMatch Backend** é uma API RESTful desenvolvida com **FastAPI**, **Post
 
 ### Stack Tecnológica
 - **Framework**: FastAPI (Python 3.12+)
+- **IA / LLM Provider**: Groq API (`llama-3.3-70b-versatile`) via SDK OpenAI
+- **Parsing de Arquivos**: `pdfplumber` (PDF) e `python-docx` (DOCX)
 - **ORM & Banco de Dados**: SQLAlchemy 2.0 (com Mapped/mapped_column) + PostgreSQL
 - **Migrações**: Alembic
 - **Validação & Schemas**: Pydantic v2
@@ -29,7 +31,8 @@ voicematch-back/
 │   ├── crud/             # Camada de acesso a dados (Operações CRUD)
 │   ├── models/           # Modelos de dados SQLAlchemy (ORM)
 │   ├── routers/          # Endpoints da API agrupados por domínio
-│   └── schemas/          # Modelos de entrada/saída Pydantic v2
+│   ├── schemas/          # Modelos de entrada/saída Pydantic v2
+│   └── services/         # Lógica de serviços externos (triagem_service.py, curriculo_parser.py)
 ├── tests/                # Testes unitários e de integração (pytest)
 ├── Dockerfile            # Imagem de produção da API
 ├── docker-compose.yml    # Orquestração local (API + PostgreSQL)

@@ -82,7 +82,7 @@ Candidato ──> Candidatura ──[Triagem IA (score & feedback)]──> Entre
 1. Um `Usuario` se cadastra (com email e senha). O sistema o classifica como `Recrutador` (tabela vinculada 1:1).
 2. O `Recrutador` cria uma `Vaga`, podendo definir um `score_minimo_triagem` para ativação do gate por IA.
 3. Um `Candidato` (que é uma entidade independente de `Usuario`) se candidata a uma vaga, gerando uma `Candidatura` (status inicial `pendente_triagem`).
-4. A IA analisa o currículo do candidato contra a vaga. Se o score obtido atingir ou superar o threshold, o status passa para `aprovada_triagem`, liberando a criação da `Entrevista` de voz. Caso contrário, assume `reprovada_triagem`.
+4. O motor de IA (Groq LLM - `llama-3.3-70b-versatile`) analisa o perfil e texto do currículo do candidato (extraído de arquivos `.pdf` ou `.docx` via `curriculo_parser`) contra a vaga. Se o score obtido atingir ou superar o threshold, o status passa para `aprovada_triagem`, liberando a criação da `Entrevista` de voz. Caso contrário, assume `reprovada_triagem` (ou mantém `pendente_triagem` em caso de erro/indisponibilidade técnica).
 5. A `Candidatura` aprovada origina uma `Entrevista`.
 6. A `Entrevista` contém várias `PerguntaEntrevista`, geradas pela IA a partir dos dados da vaga.
 7. Cada pergunta recebe uma `RespostaEntrevista` em áudio, com transcrição e métricas comportamentais.
