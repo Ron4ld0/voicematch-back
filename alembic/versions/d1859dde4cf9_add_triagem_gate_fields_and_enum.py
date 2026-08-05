@@ -15,23 +15,24 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "d1859dde4cf9"
-down_revision: Union[str, Sequence[str], None] = "869ef0b06279"
+down_revision: Union[str, Sequence[str], None] = "6b81e2f33812"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # 1. Update status_candidatura_enum safely with new values
-    op.execute(
-        "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'pendente_triagem'"
-    )
-    op.execute(
-        "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'aprovada_triagem'"
-    )
-    op.execute(
-        "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'reprovada_triagem'"
-    )
+    # 1. Update status_candidatura_enum safely with new values in autocommit block
+    with op.get_context().autocommit_block():
+        op.execute(
+            "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'pendente_triagem'"
+        )
+        op.execute(
+            "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'aprovada_triagem'"
+        )
+        op.execute(
+            "ALTER TYPE status_candidatura_enum ADD VALUE IF NOT EXISTS 'reprovada_triagem'"
+        )
 
     # Migrate existing candidaturas from 'pendente' to 'pendente_triagem'
     op.execute(
