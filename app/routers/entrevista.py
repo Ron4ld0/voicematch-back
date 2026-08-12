@@ -111,6 +111,13 @@ async def finalizar_entrevista_endpoint(id: UUID, db: Session = Depends(get_db))
                 db_entrevista.feedback_recrutador = json.dumps(
                     parecer_data, ensure_ascii=False
                 )
+                if parecer_data.get("feedback_candidato"):
+                    db_entrevista.feedback_candidato = parecer_data.get("feedback_candidato")
+                if "score_geral" in parecer_data:
+                    try:
+                        db_entrevista.score_geral = round(float(parecer_data["score_geral"]), 2)
+                    except (ValueError, TypeError):
+                        pass
     except Exception as e:
         logger.warning(f"Não foi possível gerar parecer final via IA: {e}")
 
