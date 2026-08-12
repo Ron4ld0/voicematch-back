@@ -39,8 +39,11 @@ services:
       - "8001:8001"
     environment:
       PORT: 8001
+      MOCK_AI: "false"
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
+    volumes:
+      - ./media/audio:/app/media/audio
 
   frontend:
     build:

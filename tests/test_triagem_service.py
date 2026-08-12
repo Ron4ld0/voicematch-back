@@ -67,6 +67,41 @@ def test_analisar_curriculo_success(mock_get_client):
     assert res["feedback_texto"] == "Excelente"
 
 
+@patch("app.services.triagem_service._get_groq_client")
+@patch("app.services.triagem_service.extrair_texto_curriculo")
+def test_analisar_curriculo_with_local_pdf_file(mock_extrair, mock_get_client):
+    mock_extrair.return_value = "Engenheiro de Software com 5 anos de experiencia em Python e PostgreSQL."
+
+    mock_response = MagicMock()
+    mock_response.choices[
+        0
+    ].message.content = '{"score": 8.8, "pontos_fortes": ["Experiencia Python"], "gaps": [], "feedback_texto": "Aprovado na triagem"}'
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_get_client.return_value = mock_client
+
+    mock_candidato = MagicMock()
+    mock_candidato.id = uuid4()
+    mock_candidato.nome = "Maria Santos"
+    mock_candidato.curriculo_url = "/media/curriculos/maria_curriculo.pdf"
+    mock_candidato.resumo_profissional = None
+    mock_candidato.experiencias = None
+    mock_candidato.tecnologias = None
+
+    mock_vaga = MagicMock()
+    mock_vaga.titulo = "Engenheiro de Software Python"
+    mock_vaga.descricao = "Vaga Python"
+    mock_vaga.descricao_candidato_ideal = None
+    mock_vaga.requisitos_hard = ["Python"]
+    mock_vaga.requisitos_soft = []
+
+    res = analisar_curriculo(mock_candidato, mock_vaga)
+    assert res["score"] == 8.8
+    assert res["pontos_fortes"] == ["Experiencia Python"]
+    mock_extrair.assert_called_once_with("/media/curriculos/maria_curriculo.pdf")
+
+
+
 def test_apply_to_vaga_fallback_on_groq_error():
     vaga_id = uuid4()
     candidato_id = uuid4()

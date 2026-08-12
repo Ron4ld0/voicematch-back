@@ -21,6 +21,7 @@ def create_vaga(db: Session, vaga_in: VagaCreate) -> Vaga:
         descricao_candidato_ideal=vaga_in.descricao_candidato_ideal,
         requisitos_hard=vaga_in.requisitos_hard,
         requisitos_soft=vaga_in.requisitos_soft,
+        score_minimo_triagem=vaga_in.score_minimo_triagem,
         status=vaga_in.status,
     )
     db.add(db_vaga)

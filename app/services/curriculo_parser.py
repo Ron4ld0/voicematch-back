@@ -35,16 +35,30 @@ def extrair_texto_curriculo(curriculo_url: str) -> str:
             ) from e
     else:
         file_path = url_clean.replace("file://", "")
-        if not os.path.exists(file_path):
+        
+        # Tentar resolver o caminho local se for relativo (ex: /media/curriculos/nome.pdf)
+        candidatos_path = [
+            file_path,
+            file_path.lstrip("/"),
+            os.path.join(os.getcwd(), file_path.lstrip("/")),
+        ]
+        
+        resolved_path = None
+        for p in candidatos_path:
+            if os.path.exists(p) and os.path.isfile(p):
+                resolved_path = p
+                break
+
+        if not resolved_path:
             raise FileNotFoundError(
                 f"Arquivo de currículo não encontrado no caminho local: '{file_path}'."
             )
         try:
-            with open(file_path, "rb") as f:
+            with open(resolved_path, "rb") as f:
                 file_bytes = f.read()
         except Exception as e:
             raise RuntimeError(
-                f"Erro ao ler o arquivo de currículo local ('{file_path}'): {str(e)}"
+                f"Erro ao ler o arquivo de currículo local ('{resolved_path}'): {str(e)}"
             ) from e
 
     if not file_bytes:
