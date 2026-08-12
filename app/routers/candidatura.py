@@ -30,6 +30,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidaturas", tags=["Candidaturas"])
 
 
+@router.get("", response_model=List[CandidaturaResponse])
+def list_candidaturas(db: Session = Depends(get_db)):
+    """Lista todas as candidaturas registradas no sistema."""
+    from app.models.candidatura import Candidatura
+    return db.query(Candidatura).all()
+
+
 @router.post(
     "", response_model=CandidaturaResponse, status_code=status.HTTP_201_CREATED
 )
