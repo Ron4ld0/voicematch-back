@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
 from app.core.database import get_db
+from app.core.curriculo import save_curriculo_file
 from app.schemas.candidato import CandidatoCreate, CandidatoUpdate, CandidatoResponse
 from app.crud.candidato import (
     get_candidato,
@@ -74,3 +75,27 @@ def remove_candidato(id: UUID, db: Session = Depends(get_db)):
             detail="Candidato não encontrado para deleção.",
         )
     return None
+
+
+@router.post(
+    "/{id}/upload-curriculo",
+    response_model=CandidatoResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def upload_curriculo(
+    id: UUID, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Recebe um arquivo de currículo (.pdf ou .docx) para um candidato específico,
+    salva no servidor em /media/curriculos e atualiza o curriculo_url do candidato.
+    """
+    db_candidato = get_candidato(db, candidato_id=id)
+    if not db_candidato:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Candidato não encontrado."
+        )
+
+    curriculo_url = await save_curriculo_file(file, candidato_id=id)
+    candidato_in = CandidatoUpdate(curriculo_url=curriculo_url)
+    return update_candidato(db, db_candidato=db_candidato, candidato_in=candidato_in)
+

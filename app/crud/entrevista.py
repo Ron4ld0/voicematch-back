@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import Optional, List
@@ -9,6 +10,11 @@ from app.schemas.entrevista import (
     EntrevistaUpdate,
     PerguntaCreate,
     RespostaCreate,
+)
+
+PERGUNTA_INICIAL_PADRAO = (
+    "Olá! Seja bem-vindo(a) à entrevista do VoiceMatch. "
+    "Para começarmos, por favor se apresente e conte sobre sua trajetória profissional e principais experiências."
 )
 
 
@@ -37,6 +43,33 @@ def create_entrevista(db: Session, entrevista_in: EntrevistaCreate) -> Entrevist
     db.add(db_entrevista)
     db.commit()
     db.refresh(db_entrevista)
+    return db_entrevista
+
+
+def inicializar_entrevista_automatica(
+    db: Session, candidatura_id: UUID
+) -> Entrevista:
+    """
+    Cria uma nova entrevista e adiciona automaticamente a pergunta inicial (Ordem 1)
+    se ainda não existir entrevista para esta candidatura.
+    """
+    existentes = get_entrevistas_by_candidatura(db, candidatura_id=candidatura_id)
+    if existentes:
+        return existentes[0]
+
+    entrevista_in = EntrevistaCreate(
+        candidatura_id=candidatura_id,
+        status="agendada",
+        data_inicio=datetime.now(timezone.utc),
+    )
+    db_entrevista = create_entrevista(db, entrevista_in=entrevista_in)
+
+    pergunta_in = PerguntaCreate(
+        pergunta_texto=PERGUNTA_INICIAL_PADRAO,
+        ordem=1,
+    )
+    create_pergunta(db, entrevista_id=db_entrevista.id, pergunta_in=pergunta_in)
+
     return db_entrevista
 
 

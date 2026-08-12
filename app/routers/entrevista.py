@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -16,6 +17,7 @@ from app.crud.entrevista import (
     create_entrevista,
     get_entrevista,
     get_entrevistas_by_candidatura,
+    inicializar_entrevista_automatica,
     update_entrevista,
     delete_entrevista,
     create_pergunta,
@@ -25,7 +27,7 @@ from app.crud.entrevista import (
     create_resposta,
     get_resposta_by_pergunta,
 )
-from app.models.enums import StatusCandidatura
+from app.models.enums import StatusCandidatura, StatusEntrevista
 from app.crud.candidatura import get_candidatura
 
 router = APIRouter(tags=["Entrevistas"])
@@ -61,14 +63,80 @@ def register_entrevista(entrevista_in: EntrevistaCreate, db: Session = Depends(g
 def list_entrevistas_by_candidatura(
     candidatura_id: UUID, db: Session = Depends(get_db)
 ):
-    """Lista todas as entrevistas de uma candidatura específica."""
-    db_candidatura = get_candidatura(db, candidatura_id=candidatura_id)
-    if not db_candidatura:
+    entrevistas = get_entrevistas_by_candidatura(db, candidatura_id=candidatura_id)
+    if not entrevistas:
+        entrevista_nova = inicializar_entrevista_automatica(db, candidatura_id=candidatura_id)
+        entrevistas = [entrevista_nova]
+    return entrevistas
+
+
+import json
+import httpx
+from app.core.config import settings
+
+
+@router.post("/entrevistas/{id}/finalizar", response_model=EntrevistaResponse)
+async def finalizar_entrevista_endpoint(id: UUID, db: Session = Depends(get_db)):
+    """
+    Finaliza a entrevista, consolida o score geral (triagem + entrevista de voz) e gera o parecer final da IA.
+    """
+    db_entrevista = get_entrevista(db, entrevista_id=id)
+    if not db_entrevista:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="A candidatura especificada não existe.",
+            status_code=status.HTTP_404_NOT_FOUND, detail="Entrevista não encontrada."
         )
-    return get_entrevistas_by_candidatura(db, candidatura_id=candidatura_id)
+
+    db_entrevista.status = StatusEntrevista.concluida
+    db_entrevista.data_fim = datetime.now()
+
+    # Chamar IA para gerar parecer final consolidado
+    try:
+        conversation_history = [
+            {
+                "pergunta": p.pergunta_texto,
+                "resposta": p.resposta.transcricao if p.resposta else "",
+            }
+            for p in db_entrevista.perguntas
+        ]
+        payload = {
+            "question": db_entrevista.candidatura.vaga.titulo,
+            "candidate_answer": json.dumps(conversation_history, ensure_ascii=False),
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res_eval = await client.post(
+                f"{settings.AI_SERVICE_URL}/ai/final-evaluation", json=payload
+            )
+            if res_eval.status_code == 200:
+                parecer_data = res_eval.json()
+                db_entrevista.feedback_recrutador = json.dumps(
+                    parecer_data, ensure_ascii=False
+                )
+    except Exception as e:
+        logger.warning(f"Não foi possível gerar parecer final via IA: {e}")
+
+    # Cálculo da nota geral (40% triagem + 60% respostas de áudio da entrevista)
+    score_triagem = float(db_entrevista.candidatura.score_triagem or 7.0)
+    scores_respostas = []
+    for p in db_entrevista.perguntas:
+        if p.resposta and p.resposta.metricas:
+            m = p.resposta.metricas
+            if isinstance(m, dict):
+                p_val = float(m.get("proatividade", 7))
+                res_val = float(m.get("resolucao_de_problemas", 7))
+                trab_val = float(m.get("trabalho_em_equipe", 7))
+                scores_respostas.append((p_val + res_val + trab_val) / 3.0)
+
+    score_entrevista = (
+        sum(scores_respostas) / len(scores_respostas) if scores_respostas else 7.5
+    )
+    score_geral = round((score_triagem * 0.4) + (score_entrevista * 0.6), 2)
+    db_entrevista.score_geral = score_geral
+
+    # Atualizar candidatura para avaliada
+    db_entrevista.candidatura.status = StatusCandidatura.avaliada
+    db.commit()
+    db.refresh(db_entrevista)
+    return db_entrevista
 
 
 @router.get("/entrevistas/{id}", response_model=EntrevistaResponse)

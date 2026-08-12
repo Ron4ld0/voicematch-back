@@ -7,6 +7,10 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.core.audio import ensure_audio_dir_exists
 
+from contextlib import asynccontextmanager
+from app.core.database import SessionLocal
+from app.core.seed import seed_admin_user
+
 # Routers
 from app.routers.auth import router as auth_router
 from app.routers.usuario import router as usuario_router
@@ -19,10 +23,23 @@ from app.routers.audio import router as audio_router
 # Garantir que o diretório de áudio exista ao iniciar
 ensure_audio_dir_exists()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Popular usuário admin no banco na inicialização
+    db = SessionLocal()
+    try:
+        seed_admin_user(db)
+    finally:
+        db.close()
+    yield
+
+
 app = FastAPI(
     title="VoiceMatch AI Backend",
     description="API do sistema de recrutamento com análise de áudio",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS configuration

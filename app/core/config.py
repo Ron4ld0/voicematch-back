@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # Áudio e IA
     AUDIO_UPLOAD_DIR: str = "media/audio"
+    CURRICULO_UPLOAD_DIR: str = "media/curriculos"
     OPENAI_API_KEY: Optional[str] = None
     GROQ_API_KEY: Optional[str] = None
     GROQ_MODEL_TRIAGEM: str = "llama-3.3-70b-versatile"

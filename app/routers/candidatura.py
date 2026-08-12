@@ -20,6 +20,7 @@ from app.crud.candidatura import (
     update_candidatura_status,
     update_candidatura_triagem,
 )
+from app.crud.entrevista import inicializar_entrevista_automatica
 from app.crud.candidato import get_candidato
 from app.crud.vaga import get_vaga
 from app.services.triagem_service import analisar_curriculo
@@ -88,6 +89,9 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
             status=novo_status,
             data_triagem=datetime.now(timezone.utc),
         )
+
+        if db_candidatura.status == StatusCandidatura.aprovada_triagem:
+            inicializar_entrevista_automatica(db, candidatura_id=db_candidatura.id)
     except Exception as e:
         logger.warning(
             f"Falha ao executar triagem por IA na candidatura '{db_candidatura.id}': {e}"
@@ -151,6 +155,9 @@ def modify_candidatura_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Candidatura não encontrada."
         )
-    return update_candidatura_status(
+    updated = update_candidatura_status(
         db, db_candidatura=db_candidatura, status_in=status_in
     )
+    if updated.status == StatusCandidatura.aprovada_triagem:
+        inicializar_entrevista_automatica(db, candidatura_id=updated.id)
+    return updated
