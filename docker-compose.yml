@@ -54,8 +54,13 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ../../VoiceMatchFrontend:/app
+      - /app/node_modules
+      - /app/.next
     depends_on:
       - api
+
 
 volumes:
   postgres_data:

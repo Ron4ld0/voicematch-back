@@ -58,17 +58,14 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
             detail="O candidato especificado não existe.",
         )
 
-    # 3. Validar se o candidato já se candidatou para essa vaga
+    # 3. Se o candidato já se candidatou, atualizar e reavaliar a candidatura existente
     existing_candidatura = get_candidatura_by_vaga_and_candidato(
         db, vaga_id=candidatura_in.vaga_id, candidato_id=candidatura_in.candidato_id
     )
     if existing_candidatura:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Este candidato já se candidatou a esta vaga anteriormente.",
-        )
-
-    db_candidatura = create_candidatura(db, candidatura_in=candidatura_in)
+        db_candidatura = existing_candidatura
+    else:
+        db_candidatura = create_candidatura(db, candidatura_in=candidatura_in)
 
     # 4. Executar a triagem síncrona de currículo por IA
     try:
