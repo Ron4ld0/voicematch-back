@@ -144,8 +144,11 @@ async def upload_audio_resposta(
         )
         db_resposta = create_resposta(db, pergunta_id=pergunta_id, resposta_in=resposta_in)
 
-    # 6. Se a IA gerou a próxima pergunta e ela ainda não existe, cadastrar na entrevista
-    if proxima_pergunta_texto:
+    # 6. Regra de Negócio: Ciclo Fixo de 3 Perguntas
+    # Ordem 1: Pessoal -> Próxima é Ordem 2 (Fit Cultural)
+    # Ordem 2: Fit Cultural -> Próxima é Ordem 3 (Técnica)
+    # Ordem 3: Técnica -> Finalização imediata da sessão de entrevista e disparo do Parecer Consolidado por IA
+    if db_pergunta.ordem < 3 and proxima_pergunta_texto:
         nova_ordem = db_pergunta.ordem + 1
         ja_existe_prox = any(p.ordem == nova_ordem for p in db_pergunta.entrevista.perguntas)
         if not ja_existe_prox:
@@ -158,6 +161,13 @@ async def upload_audio_resposta(
                     ),
                 )
             except Exception as e:
-                print(f"Aviso: Não foi possível criar próxima pergunta gerada ({e})")
+                logger.warning(f"Não foi possível criar próxima pergunta gerada ({e})")
+    elif db_pergunta.ordem >= 3:
+        # Finalização automática após a terceira resposta
+        try:
+            from app.crud.entrevista import processar_finalizacao_entrevista
+            await processar_finalizacao_entrevista(db, db_pergunta.entrevista)
+        except Exception as e:
+            logger.warning(f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}")
 
     return db_resposta
