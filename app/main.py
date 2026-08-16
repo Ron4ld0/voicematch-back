@@ -10,6 +10,7 @@ from app.core.audio import ensure_audio_dir_exists
 from contextlib import asynccontextmanager
 from app.core.database import SessionLocal
 from app.core.seed import seed_admin_user
+from app.seeds.seed_habilidades import seed_habilidades
 
 # Routers
 from app.routers.auth import router as auth_router
@@ -27,10 +28,11 @@ ensure_audio_dir_exists()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Popular usuário admin no banco na inicialização
+    # Popular usuário admin e catálogo de habilidades no banco na inicialização
     db = SessionLocal()
     try:
         seed_admin_user(db)
+        seed_habilidades(db)
     finally:
         db.close()
     yield
