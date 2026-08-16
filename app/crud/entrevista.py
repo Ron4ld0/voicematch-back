@@ -13,7 +13,7 @@ from app.schemas.entrevista import (
 )
 
 PERGUNTA_INICIAL_PADRAO = (
-    "Olá! Seja bem-vindo(a) à entrevista de voz do VoiceMatch AI. "
+    "Olá! Eu sou a Iris, a inteligência artificial do VoiceMatch AI, e vou conduzir a sua entrevista de voz. "
     "Para iniciarmos nossa primeira etapa (Apresentação Pessoal), por favor se apresente e compartilhe sobre sua trajetória profissional e motivações."
 )
 
@@ -186,22 +186,48 @@ async def processar_finalizacao_entrevista(
     db_entrevista.status = StatusEntrevista.concluida
     db_entrevista.data_fim = datetime.now()
 
-    # Organizar histórico ordenado das perguntas e respostas transcritas
+    # Organizar histórico ordenado das perguntas e respostas transcritas com métricas
     perguntas_ordenadas = sorted(db_entrevista.perguntas, key=lambda p: p.ordem)
     conversation_history = [
         {
             "etapa": f"Etapa {p.ordem}",
             "pergunta": p.pergunta_texto,
             "resposta": p.resposta.transcricao if p.resposta else "",
+            "metricas": p.resposta.metricas if p.resposta and p.resposta.metricas else {},
         }
         for p in perguntas_ordenadas
     ]
 
+    # Obter dados complementares da vaga, candidato e triagem
+    cand_nome = ""
+    vaga_titulo = "Vaga"
+    vaga_reqs = ""
+    triagem_info = {}
+    if db_entrevista.candidatura:
+        if db_entrevista.candidatura.candidato:
+            cand_nome = db_entrevista.candidatura.candidato.nome
+        if db_entrevista.candidatura.vaga:
+            v = db_entrevista.candidatura.vaga
+            vaga_titulo = v.titulo
+            vaga_reqs = f"Título: {v.titulo}\nDescrição: {v.descricao or ''}\nHard Skills: {v.requisitos_hard}\nSoft Skills: {v.requisitos_soft}"
+        if db_entrevista.candidatura.feedback_triagem:
+            triagem_info = dict(db_entrevista.candidatura.feedback_triagem) if isinstance(db_entrevista.candidatura.feedback_triagem, dict) else {}
+        if db_entrevista.candidatura.score_triagem is not None:
+            try:
+                triagem_info["score_triagem"] = float(db_entrevista.candidatura.score_triagem)
+            except Exception:
+                triagem_info["score_triagem"] = str(db_entrevista.candidatura.score_triagem)
+
     # Chamar IA para gerar parecer final consolidado
     try:
         payload = {
-            "question": db_entrevista.candidatura.vaga.titulo if db_entrevista.candidatura and db_entrevista.candidatura.vaga else "Entrevista de Voz",
-            "candidate_answer": json.dumps(conversation_history, ensure_ascii=False),
+            "question": vaga_reqs or vaga_titulo,
+            "candidate_answer": json.dumps({
+                "candidate_name": cand_nome,
+                "job_title": vaga_titulo,
+                "screening_evaluation": triagem_info,
+                "voice_interview_history": conversation_history,
+            }, ensure_ascii=False, default=str),
         }
         async with httpx.AsyncClient(timeout=30.0) as client:
             res_eval = await client.post(
