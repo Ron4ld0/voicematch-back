@@ -1,7 +1,9 @@
 import uuid
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+
+from app.models.habilidade import TipoHabilidadeEnum
 
 from app.core.database import get_db
 from app.schemas.habilidade import (
@@ -30,12 +32,18 @@ def cadastrar_habilidade(habilidade_in: HabilidadeCreate, db: Session = Depends(
     return create_habilidade(db=db, habilidade_in=habilidade_in)
 
 
-@router.get("/", response_model=List[HabilidadeResponse])
-def listar_habilidades(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@router.get("/", response_model=list[HabilidadeResponse])
+def listar_habilidades(
+    skip: int = 0, 
+    limit: int = 100, 
+    nome: Optional[str] = None,
+    tipo: Optional[TipoHabilidadeEnum] = None,
+    db: Session = Depends(get_db)
+):
     """
-    Lista as habilidades cadastradas com paginação.
+    Lista as habilidades cadastradas com paginação, busca textual e filtro por tipo.
     """
-    return get_habilidades(db=db, skip=skip, limit=limit)
+    return get_habilidades(db=db, skip=skip, limit=limit, nome=nome, tipo=tipo)
 
 
 @router.put("/{habilidade_id}", response_model=HabilidadeResponse)
