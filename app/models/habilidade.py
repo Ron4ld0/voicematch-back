@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+import enum
+import uuid
+from sqlalchemy import String, Integer, ForeignKey, Enum as SQLEnum, CheckConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.base import Base
+
+
+class TipoHabilidadeEnum(str, enum.Enum):
+    HARD = "HARD"
+    SOFT = "SOFT"
+
+
+class ObrigatoriedadeEnum(str, enum.Enum):
+    OBRIGATORIA = "OBRIGATORIA"
+    DESEJAVEL = "DESEJAVEL"
+
+
+class Habilidade(Base):
+    __tablename__ = "habilidade"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    nome: Mapped[str] = mapped_column(String, nullable=False)
+    tipo: Mapped[TipoHabilidadeEnum] = mapped_column(SQLEnum(TipoHabilidadeEnum), nullable=False)
+    categoria: Mapped[str] = mapped_column(String, nullable=False)
+    
+    empresa_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)
+
+
+class VagaHabilidade(Base):
+    __tablename__ = "vaga_habilidade"
+    __table_args__ = (
+        CheckConstraint("peso >= 1 AND peso <= 5", name="check_peso_range"),
+    )
+
+    vaga_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vaga.id", ondelete="CASCADE"), primary_key=True)
+    habilidade_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("habilidade.id", ondelete="CASCADE"), primary_key=True)
+    
+    peso: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    obrigatoriedade: Mapped[ObrigatoriedadeEnum] = mapped_column(SQLEnum(ObrigatoriedadeEnum), default=ObrigatoriedadeEnum.DESEJAVEL)
+
+    habilidade: Mapped["Habilidade"] = relationship()
+
+    vaga: Mapped["Vaga"] = relationship(back_populates="habilidades_vinculadas")

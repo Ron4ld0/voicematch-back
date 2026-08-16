@@ -22,6 +22,7 @@ from app.models.base import Base
 from app.models.enums import StatusVaga
 
 
+
 class Vaga(Base):
     __tablename__ = "vaga"
 
@@ -60,4 +61,8 @@ class Vaga(Base):
     )
     candidaturas: Mapped[List["Candidatura"]] = relationship(
         "Candidatura", back_populates="vaga", cascade="all, delete-orphan"
+    )
+
+    habilidades_vinculadas: Mapped[list["VagaHabilidade"]] = relationship(
+        "VagaHabilidade", back_populates="vaga", cascade="all, delete-orphan"
     )

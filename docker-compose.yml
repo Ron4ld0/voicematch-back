@@ -32,7 +32,7 @@ services:
 
   services:
     build:
-      context: ../../VoiceMatchServices
+      context: ../VoiceMatchServices
     container_name: voicematch-services
     restart: always
     ports:
@@ -47,7 +47,7 @@ services:
 
   frontend:
     build:
-      context: ../../VoiceMatchFrontend
+      context: ../VoiceMatchFrontend
     container_name: voicematch-front
     restart: always
     ports:
