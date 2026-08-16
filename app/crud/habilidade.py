@@ -1,7 +1,7 @@
 import uuid
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
-from app.models.habilidade import Habilidade, VagaHabilidade
+from app.models.habilidade import Habilidade, VagaHabilidade, TipoHabilidadeEnum
 from app.schemas.habilidade import (
     HabilidadeCreate, 
     HabilidadeUpdate, 
@@ -46,8 +46,22 @@ def create_habilidade(db: Session, habilidade_in: HabilidadeCreate) -> Habilidad
     return db_habilidade
 
 
-def get_habilidades(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Habilidade).offset(skip).limit(limit).all()
+def get_habilidades(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 100, 
+    nome: Optional[str] = None, 
+    tipo: Optional[TipoHabilidadeEnum] = None
+):
+    query = db.query(Habilidade)
+
+    if nome:
+        query = query.filter(Habilidade.nome.ilike(f"%{nome}%"))
+
+    if tipo:
+        query = query.filter(Habilidade.tipo == tipo)
+
+    return query.offset(skip).limit(limit).all()
 
 
 def get_habilidades_por_vaga(db: Session, vaga_id: uuid.UUID):
