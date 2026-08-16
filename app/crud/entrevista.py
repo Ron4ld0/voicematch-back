@@ -13,8 +13,8 @@ from app.schemas.entrevista import (
 )
 
 PERGUNTA_INICIAL_PADRAO = (
-    "Olá! Seja bem-vindo(a) à entrevista do VoiceMatch. "
-    "Para começarmos, por favor se apresente e conte sobre sua trajetória profissional e principais experiências."
+    "Olá! Seja bem-vindo(a) à entrevista de voz do VoiceMatch AI. "
+    "Para iniciarmos nossa primeira etapa (Apresentação Pessoal), por favor se apresente e compartilhe sobre sua trajetória profissional e motivações."
 )
 
 
@@ -166,3 +166,92 @@ def delete_pergunta(db: Session, pergunta_id: UUID) -> bool:
     db.delete(db_pergunta)
     db.commit()
     return True
+
+
+import json
+import logging
+import httpx
+from app.core.config import settings
+from app.models.enums import StatusCandidatura, StatusEntrevista
+
+logger = logging.getLogger(__name__)
+
+
+async def processar_finalizacao_entrevista(
+    db: Session, db_entrevista: Entrevista
+) -> Entrevista:
+    """
+    Finaliza a entrevista de voz, consolida os scores e dispara a geração do Parecer Consolidado por IA.
+    """
+    db_entrevista.status = StatusEntrevista.concluida
+    db_entrevista.data_fim = datetime.now()
+
+    # Organizar histórico ordenado das perguntas e respostas transcritas
+    perguntas_ordenadas = sorted(db_entrevista.perguntas, key=lambda p: p.ordem)
+    conversation_history = [
+        {
+            "etapa": f"Etapa {p.ordem}",
+            "pergunta": p.pergunta_texto,
+            "resposta": p.resposta.transcricao if p.resposta else "",
+        }
+        for p in perguntas_ordenadas
+    ]
+
+    # Chamar IA para gerar parecer final consolidado
+    try:
+        payload = {
+            "question": db_entrevista.candidatura.vaga.titulo if db_entrevista.candidatura and db_entrevista.candidatura.vaga else "Entrevista de Voz",
+            "candidate_answer": json.dumps(conversation_history, ensure_ascii=False),
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res_eval = await client.post(
+                f"{settings.AI_SERVICE_URL}/ai/final-evaluation", json=payload
+            )
+            if res_eval.status_code == 200:
+                parecer_data = res_eval.json()
+                db_entrevista.feedback_recrutador = json.dumps(
+                    parecer_data, ensure_ascii=False
+                )
+                if parecer_data.get("feedback_candidato"):
+                    db_entrevista.feedback_candidato = parecer_data.get(
+                        "feedback_candidato"
+                    )
+                if "score_geral" in parecer_data:
+                    try:
+                        db_entrevista.score_geral = round(
+                            float(parecer_data["score_geral"]), 2
+                        )
+                    except (ValueError, TypeError):
+                        pass
+    except Exception as e:
+        logger.warning(f"Não foi possível gerar parecer final via IA: {e}")
+
+    # Fallback/Cálculo da nota geral se não vier da IA (40% triagem + 60% respostas de áudio da entrevista)
+    if db_entrevista.score_geral is None:
+        score_triagem = float(
+            (db_entrevista.candidatura and db_entrevista.candidatura.score_triagem) or 7.0
+        )
+        scores_respostas = []
+        for p in db_entrevista.perguntas:
+            if p.resposta and p.resposta.metricas:
+                m = p.resposta.metricas
+                if isinstance(m, dict):
+                    p_val = float(m.get("proatividade", 7))
+                    res_val = float(m.get("resolucao_de_problemas", 7))
+                    trab_val = float(m.get("trabalho_em_equipe", 7))
+                    scores_respostas.append((p_val + res_val + trab_val) / 3.0)
+
+        score_entrevista = (
+            sum(scores_respostas) / len(scores_respostas) if scores_respostas else 7.5
+        )
+        score_geral = round((score_triagem * 0.4) + (score_entrevista * 0.6), 2)
+        db_entrevista.score_geral = score_geral
+
+    # Atualizar candidatura para avaliada
+    if db_entrevista.candidatura:
+        db_entrevista.candidatura.status = StatusCandidatura.avaliada
+
+    db.commit()
+    db.refresh(db_entrevista)
+    return db_entrevista
+
