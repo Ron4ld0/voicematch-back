@@ -13,6 +13,7 @@ from app.models.candidatura import Candidatura
 from app.models.entrevista import Entrevista
 from app.models.pergunta_entrevista import PerguntaEntrevista
 from app.models.resposta_entrevista import RespostaEntrevista
+from app.models.habilidade import Habilidade, VagaHabilidade
 
 __all__ = [
     "Base",
@@ -28,4 +29,6 @@ __all__ = [
     "Entrevista",
     "PerguntaEntrevista",
     "RespostaEntrevista",
+    "Habilidade",
+    "VagaHabilidade",
 ]
