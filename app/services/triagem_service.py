@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """Você é um especialista sênior em recrutamento e seleção técnica de RH.
-Sua função é realizar a triagem rigorosa de currículos e perfis de candidatos para vagas de emprego.
+Sua função é realizar a triagem rigorosa, analítica e imparcial de currículos e perfis de candidatos para vagas de emprego.
 
 DIRETRIZES CRÍTICAS DE AVALIAÇÃO:
 1. EVIDÊNCIA ESTREITA (ANTI-ALUCINAÇÃO):
@@ -21,22 +21,28 @@ DIRETRIZES CRÍTICAS DE AVALIAÇÃO:
    - NUNCA assuma, invente ou presuma que o candidato domina tecnologias, frameworks ou práticas (como React, Node.js, SQL, Clean Code, etc.) apenas por estar matriculado em um curso ou ter uma formação genérica.
    - Se uma habilidade ou experiência exigida pela vaga não estiver explicitamente descrita no histórico do candidato, ela DEVE ser considerada ausente (gap).
 
-2. VALIDAÇÃO DO ARQUIVO/DOCUMENTO:
+2. VALIDAÇÃO DO DOCUMENTO:
    - O arquivo deve ser um CURRÍCULO profissional com histórico de experiências, projetos ou habilidades.
-   - Se o texto fornecido for apenas um boleto, comprovante de matrícula, recibo, certificado de curso isolado, diploma ou texto não relacionado a um currículo estruturado, atribua pontuação BAIXA (entre 0.0 e 3.0), apontando nos gaps que o documento anexado não é um currículo profissional completo com comprovação das competências exigidas.
+   - Se o texto fornecido for apenas um boleto, comprovante de matrícula, recibo, certificado de curso isolado, diploma ou texto não relacionado a um currículo estruturado, atribua pontuação BAIXA em todas as dimensões (entre 0.0 e 3.0), apontando nos gaps que o documento anexado não é um currículo profissional completo.
 
-3. CRITÉRIO DE PONTUAÇÃO (SCORE de 0.0 a 10.0):
-   - 0.0 a 3.0: Documento inválido (boleto/comprovante), sem currículo legível ou sem nenhuma aderência aos requisitos técnicos.
-   - 3.1 a 5.9: Currículo com pouca aderência, faltam a maioria dos requisitos técnicos ou experiências práticas essenciais.
-   - 6.0 a 7.9: Aderência moderada/boa aos requisitos obrigatórios da vaga.
-   - 8.0 a 10.0: Forte aderência comprovada, com histórico sólido em praticamente todos os requisitos essenciais.
+3. SISTEMA DE PONDERAÇÃO EXPLÍCITA (0.0 a 10.0 por dimensão):
+   - 🛠️ HARD SKILLS & STACK TÉCNICA (60% do peso): Aderência comprovada às tecnologias, frameworks, bancos de dados, linguagens e ferramentas exigidas na vaga, considerando os pesos de cada requisito.
+   - 💼 EXPERIÊNCIA PRÁTICA & PROJETOS (25% do peso): Tempo de atuação profissional relevante, complexidade dos projetos desenvolvidos, desafios reais entregues e maturidade na área.
+   - 🎓 FORMAÇÃO, CERTIFICAÇÕES & SOFT SKILLS (15% do peso): Formação acadêmica, cursos complementares, certificações relevantes, metodologias ágeis (Scrum/Kanban) e evidências de colaboração e boa comunicação.
 
-Sua resposta DEVE ser estritamente um objeto JSON válido (sem blocos de código markdown, sem caracteres extras) no seguinte formato exato:
+4. CÁLCULO DA NOTA FINAL:
+   - A nota final `score` DEVE ser o resultado da média ponderada:
+     score = round((score_hard_skills * 0.60) + (score_experiencia * 0.25) + (score_soft_skills * 0.15), 2)
+
+Sua resposta DEVE ser estritamente um objeto JSON válido (sem blocos markdown, sem caracteres extras) no seguinte formato exato:
 {
-  "score": <número float de 0.0 a 10.0 representando a nota final de aderência com até 2 casas decimais>,
-  "pontos_fortes": ["<ponto forte comprovado 1>", ...],
-  "gaps": ["<lacuna ou requisito não comprovado 1>", ...],
-  "feedback_texto": "<texto direto, construtivo e profissional explicando o resultado da avaliação ao candidato>"
+  "score": <float de 0.0 a 10.0 com 2 casas decimais>,
+  "score_hard_skills": <float de 0.0 a 10.0>,
+  "score_experiencia": <float de 0.0 a 10.0>,
+  "score_soft_skills": <float de 0.0 a 10.0>,
+  "pontos_fortes": ["<ponto forte comprovado 1>", "<ponto forte comprovado 2>"],
+  "gaps": ["<lacuna ou requisito não comprovado 1>", "<lacuna ou requisito não comprovado 2>"],
+  "feedback_texto": "<análise técnica e comportamental clara, fundamentada e profissional justificando o parecer de triagem>"
 }
 """
 
@@ -61,8 +67,22 @@ def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
             "Chaves obrigatórias 'score' ou 'feedback_texto' ausentes no JSON."
         )
 
-    score = float(data["score"])
-    score_clamped = max(0.0, min(10.0, round(score, 2)))
+    score_hard = float(data.get("score_hard_skills", data.get("score", 7.0)))
+    score_exp = float(data.get("score_experiencia", data.get("score", 7.0)))
+    score_soft = float(data.get("score_soft_skills", data.get("score", 7.0)))
+
+    score_hard_clamped = max(0.0, min(10.0, round(score_hard, 2)))
+    score_exp_clamped = max(0.0, min(10.0, round(score_exp, 2)))
+    score_soft_clamped = max(0.0, min(10.0, round(score_soft, 2)))
+
+    # Se veio score explícito válido, usamos com clamp; senão calculamos a média ponderada
+    try:
+        score_val = float(data["score"])
+        score_clamped = max(0.0, min(10.0, round(score_val, 2)))
+    except (ValueError, TypeError):
+        score_clamped = round(
+            (score_hard_clamped * 0.60) + (score_exp_clamped * 0.25) + (score_soft_clamped * 0.15), 2
+        )
 
     pontos_fortes = data.get("pontos_fortes", [])
     if not isinstance(pontos_fortes, list):
@@ -76,6 +96,9 @@ def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
 
     return {
         "score": score_clamped,
+        "score_hard_skills": score_hard_clamped,
+        "score_experiencia": score_exp_clamped,
+        "score_soft_skills": score_soft_clamped,
         "pontos_fortes": [str(p) for p in pontos_fortes],
         "gaps": [str(g) for g in gaps],
         "feedback_texto": feedback_texto,

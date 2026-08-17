@@ -31,7 +31,7 @@ class Habilidade(Base):
 class VagaHabilidade(Base):
     __tablename__ = "vaga_habilidade"
     __table_args__ = (
-        CheckConstraint("peso >= 1 AND peso <= 5", name="check_peso_range"),
+        CheckConstraint("peso >= 1 AND peso <= 10", name="check_peso_range"),
     )
 
     vaga_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vaga.id", ondelete="CASCADE"), primary_key=True)

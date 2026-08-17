@@ -32,7 +32,7 @@ class HabilidadeUpdate(BaseModel):
 
 class VagaHabilidadeCreate(BaseModel):
     habilidade_id: uuid.UUID
-    peso: int = Field(..., ge=1, le=5, description="Peso de relevância (1 a 5)")
+    peso: int = Field(..., ge=1, le=10, description="Peso de relevância (1 a 10)")
     obrigatoriedade: ObrigatoriedadeEnum
 
 
