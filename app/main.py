@@ -20,6 +20,7 @@ from app.routers.candidatura import router as candidatura_router
 from app.routers.entrevista import router as entrevista_router
 from app.routers.audio import router as audio_router
 from app.routers.habilidade import router as habilidade_router
+from app.routers.relatorio import router as relatorio_router
 
 # Garantir que o diretório de áudio exista ao iniciar
 ensure_audio_dir_exists()
@@ -64,6 +65,7 @@ app.include_router(candidatura_router)
 app.include_router(entrevista_router)
 app.include_router(audio_router)
 app.include_router(habilidade_router)
+app.include_router(relatorio_router)
 
 
 @app.get("/health", tags=["Health"])
