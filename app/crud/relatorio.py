@@ -10,7 +10,7 @@ from app.models.enums import StatusEntrevista
 
 def obter_totais_gerais(db: Session):
 
-    total_vagas = db.query(func.count(Vaga.id)).scalar() or 0  # type: ignore
+    total_vagas = db.query(func.count(Vaga.id)).scalar() or 0
     total_candidaturas = db.query(func.count(Candidatura.id)).scalar() or 0
 
     nota_media_global = db.query(func.avg(Entrevista.score_geral)) \
