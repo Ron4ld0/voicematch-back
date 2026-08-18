@@ -8,6 +8,7 @@ from app.models.enums import (
     StatusVaga,
     TipoUsuario,
 )
+from app.models.grupo_habilidade import GrupoHabilidade, GrupoHabilidadeItem
 from app.models.habilidade import Habilidade, VagaHabilidade
 from app.models.pergunta_entrevista import PerguntaEntrevista
 from app.models.recrutador import Recrutador
@@ -31,4 +32,6 @@ __all__ = [
     "RespostaEntrevista",
     "Habilidade",
     "VagaHabilidade",
+    "GrupoHabilidade",
+    "GrupoHabilidadeItem",
 ]

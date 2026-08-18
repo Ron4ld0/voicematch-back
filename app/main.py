@@ -17,10 +17,12 @@ from app.routers.auth import router as auth_router
 from app.routers.candidato import router as candidato_router
 from app.routers.candidatura import router as candidatura_router
 from app.routers.entrevista import router as entrevista_router
+from app.routers.grupo_habilidade import router as grupo_habilidade_router
 from app.routers.habilidade import router as habilidade_router
 from app.routers.relatorio import router as relatorio_router
 from app.routers.usuario import router as usuario_router
 from app.routers.vaga import router as vaga_router
+from app.seeds.seed_grupos_habilidades import seed_grupos_habilidades
 from app.seeds.seed_habilidades import seed_habilidades
 
 # Garantir que o diretório de áudio exista ao iniciar
@@ -29,11 +31,12 @@ ensure_audio_dir_exists()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Popular usuário admin e catálogo de habilidades no banco na inicialização
+    # Popular usuário admin, catálogo de habilidades e grupos padrão no banco na inicialização
     db = SessionLocal()
     try:
         seed_admin_user(db)
         seed_habilidades(db)
+        seed_grupos_habilidades(db)
     finally:
         db.close()
     yield
@@ -67,6 +70,7 @@ app.include_router(candidatura_router)
 app.include_router(entrevista_router)
 app.include_router(audio_router)
 app.include_router(habilidade_router)
+app.include_router(grupo_habilidade_router)
 app.include_router(relatorio_router)
 
 
