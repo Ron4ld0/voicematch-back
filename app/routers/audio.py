@@ -56,7 +56,7 @@ async def upload_audio_resposta(
                             target_pergunta_id = sem_resposta[0].id
                         else:
                             target_pergunta_id = entrevistas[0].perguntas[0].id
-            except Exception as ex:
+            except Exception as ex:  # noqa: BLE001
                 logger.warning(f"Não foi possível resolver UUID de '{pergunta_id}': {ex}")
 
     if not target_pergunta_id:
@@ -124,7 +124,7 @@ async def upload_audio_resposta(
                 transcricao = data_ai.get("transcricao")
                 metricas = data_ai.get("metricas")
                 proxima_pergunta_texto = data_ai.get("proxima_pergunta")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Aviso: Não foi possível chamar o microserviço de IA ({e}).")
 
     # 5. Criar ou atualizar o registro da resposta no banco
@@ -160,14 +160,14 @@ async def upload_audio_resposta(
                         pergunta_texto=proxima_pergunta_texto, ordem=nova_ordem
                     ),
                 )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Não foi possível criar próxima pergunta gerada ({e})")
     elif db_pergunta.ordem >= 3:
         # Finalização automática após a terceira resposta
         try:
             from app.crud.entrevista import processar_finalizacao_entrevista
             await processar_finalizacao_entrevista(db, db_pergunta.entrevista)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}")
 
     return db_resposta

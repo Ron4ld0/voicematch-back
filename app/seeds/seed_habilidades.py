@@ -1,7 +1,7 @@
 import uuid
 import logging
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, engine
+from app.core.database import SessionLocal
 from app.models.habilidade import Habilidade, TipoHabilidadeEnum
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ def seed_habilidades(db: Session = None):
 
         db.commit()
         print(f"[SEED] Seed de habilidades concluído com sucesso! {total_criadas} novas habilidades inseridas.")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         db.rollback()
         print(f"[SEED] Erro ao executar seed de habilidades: {e}")
     finally:

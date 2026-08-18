@@ -115,7 +115,7 @@ def analisar_curriculo(candidato: "Candidato", vaga: "Vaga") -> Dict[str, Any]:
     if candidato.curriculo_url:
         try:
             texto_curriculo = extrair_texto_curriculo(candidato.curriculo_url)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning(
                 f"Não foi possível extrair texto do arquivo de currículo do candidato '{candidato.id}': {e}"
             )
@@ -184,7 +184,7 @@ Avalie a compatibilidade do candidato com a vaga e responda EXCLUSIVAMENTE com o
 
     try:
         return _parse_and_validate_response(raw_content)
-    except Exception as parse_error:
+    except Exception as parse_error:  # noqa: BLE001
         logger.warning(
             f"Erro ao processar JSON da primeira resposta da IA: {parse_error}. Tentando segunda chamada com instrução reforçada..."
         )

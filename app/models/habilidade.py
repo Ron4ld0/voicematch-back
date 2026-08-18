@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.vaga import Vaga
+    from app.models.habilidade import Habilidade
+
+
 import enum
 import uuid
 from sqlalchemy import String, Integer, ForeignKey, Enum as SQLEnum, CheckConstraint
