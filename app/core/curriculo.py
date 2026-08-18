@@ -1,7 +1,9 @@
 import os
-import aiofiles
 import uuid
-from fastapi import UploadFile, HTTPException, status
+
+import aiofiles
+from fastapi import HTTPException, UploadFile, status
+
 from app.core.config import settings
 
 EXTENSOES_PERMITIDAS = {".pdf", ".docx"}

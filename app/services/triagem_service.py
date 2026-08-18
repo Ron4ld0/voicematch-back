@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
 from openai import OpenAI
 
 from app.core.config import settings
@@ -57,7 +58,7 @@ def _get_groq_client() -> OpenAI:
     )
 
 
-def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
+def _parse_and_validate_response(raw_text: str) -> dict[str, Any]:
     data = json.loads(raw_text)
     if not isinstance(data, dict):
         raise ValueError("A resposta da IA não é um objeto JSON.")
@@ -81,7 +82,10 @@ def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
         score_clamped = max(0.0, min(10.0, round(score_val, 2)))
     except (ValueError, TypeError):
         score_clamped = round(
-            (score_hard_clamped * 0.60) + (score_exp_clamped * 0.25) + (score_soft_clamped * 0.15), 2
+            (score_hard_clamped * 0.60)
+            + (score_exp_clamped * 0.25)
+            + (score_soft_clamped * 0.15),
+            2,
         )
 
     pontos_fortes = data.get("pontos_fortes", [])
@@ -105,7 +109,7 @@ def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
     }
 
 
-def analisar_curriculo(candidato: "Candidato", vaga: "Vaga") -> Dict[str, Any]:
+def analisar_curriculo(candidato: "Candidato", vaga: "Vaga") -> dict[str, Any]:
     """
     Analisa o perfil e currículo do candidato contra os requisitos da vaga usando a API da Groq (LLM).
     Retorna um dicionário contendo score, pontos_fortes, gaps e feedback_texto.

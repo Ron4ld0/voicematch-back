@@ -1,8 +1,9 @@
 import io
 import os
+
+import docx
 import httpx
 import pdfplumber
-import docx
 
 
 def extrair_texto_curriculo(curriculo_url: str) -> str:
@@ -35,14 +36,14 @@ def extrair_texto_curriculo(curriculo_url: str) -> str:
             ) from e
     else:
         file_path = url_clean.replace("file://", "")
-        
+
         # Tentar resolver o caminho local se for relativo (ex: /media/curriculos/nome.pdf)
         candidatos_path = [
             file_path,
             file_path.lstrip("/"),
             os.path.join(os.getcwd(), file_path.lstrip("/")),
         ]
-        
+
         resolved_path = None
         for p in candidatos_path:
             if os.path.exists(p) and os.path.isfile(p):

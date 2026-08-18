@@ -1,7 +1,9 @@
 import logging
+
 from sqlalchemy.orm import Session
-from app.crud.usuario import get_usuario_by_email, create_usuario
-from app.schemas.usuario import UsuarioCreate, RecrutadorCreate
+
+from app.crud.usuario import create_usuario, get_usuario_by_email
+from app.schemas.usuario import RecrutadorCreate, UsuarioCreate
 
 logger = logging.getLogger(__name__)
 

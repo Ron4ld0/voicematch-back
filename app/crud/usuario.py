@@ -1,24 +1,25 @@
-from sqlalchemy.orm import Session
 from uuid import UUID
-from typing import List, Optional
-from app.models.usuario import Usuario
-from app.models.recrutador import Recrutador
-from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
-from app.models.enums import TipoUsuario
+
 from argon2 import PasswordHasher
+from sqlalchemy.orm import Session
+
+from app.models.enums import TipoUsuario
+from app.models.recrutador import Recrutador
+from app.models.usuario import Usuario
+from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
 
 ph = PasswordHasher()
 
 
-def get_usuario(db: Session, usuario_id: UUID) -> Optional[Usuario]:
+def get_usuario(db: Session, usuario_id: UUID) -> Usuario | None:
     return db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
 
-def get_usuario_by_email(db: Session, email: str) -> Optional[Usuario]:
+def get_usuario_by_email(db: Session, email: str) -> Usuario | None:
     return db.query(Usuario).filter(Usuario.email == email).first()
 
 
-def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
+def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> list[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
 
 

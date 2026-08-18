@@ -1,18 +1,19 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
-from app.core.database import get_db
+
 from app.core.curriculo import save_curriculo_file
-from app.schemas.candidato import CandidatoCreate, CandidatoUpdate, CandidatoResponse
+from app.core.database import get_db
 from app.crud.candidato import (
+    create_candidato,
+    delete_candidato,
     get_candidato,
     get_candidato_by_email,
     get_candidatos,
-    create_candidato,
     update_candidato,
-    delete_candidato,
 )
+from app.schemas.candidato import CandidatoCreate, CandidatoResponse, CandidatoUpdate
 
 router = APIRouter(prefix="/candidatos", tags=["Candidatos"])
 
@@ -35,7 +36,7 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
     return db_candidato
 
 
-@router.get("", response_model=List[CandidatoResponse])
+@router.get("", response_model=list[CandidatoResponse])
 def list_candidatos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Lista todos os candidatos."""
     return get_candidatos(db, skip=skip, limit=limit)
@@ -98,4 +99,3 @@ async def upload_curriculo(
     curriculo_url = await save_curriculo_file(file, candidato_id=id)
     candidato_in = CandidatoUpdate(curriculo_url=curriculo_url)
     return update_candidato(db, db_candidato=db_candidato, candidato_in=candidato_in)
-

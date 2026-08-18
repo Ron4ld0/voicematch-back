@@ -1,28 +1,29 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
+
 from app.core.database import get_db
-from app.models.enums import StatusCandidatura
-from app.schemas.candidatura import (
-    CandidaturaCreate,
-    CandidaturaStatusUpdate,
-    CandidaturaResponse,
-)
+from app.crud.candidato import get_candidato
 from app.crud.candidatura import (
     create_candidatura,
     get_candidatura,
     get_candidatura_by_vaga_and_candidato,
-    get_candidaturas_by_vaga,
     get_candidaturas_by_candidato,
+    get_candidaturas_by_vaga,
     update_candidatura_status,
     update_candidatura_triagem,
 )
 from app.crud.entrevista import inicializar_entrevista_automatica
-from app.crud.candidato import get_candidato
 from app.crud.vaga import get_vaga
+from app.models.enums import StatusCandidatura
+from app.schemas.candidatura import (
+    CandidaturaCreate,
+    CandidaturaResponse,
+    CandidaturaStatusUpdate,
+)
 from app.services.triagem_service import analisar_curriculo
 
 logger = logging.getLogger(__name__)
@@ -30,10 +31,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidaturas", tags=["Candidaturas"])
 
 
-@router.get("", response_model=List[CandidaturaResponse])
+@router.get("", response_model=list[CandidaturaResponse])
 def list_candidaturas(db: Session = Depends(get_db)):
     """Lista todas as candidaturas registradas no sistema."""
     from app.models.candidatura import Candidatura
+
     return db.query(Candidatura).all()
 
 
@@ -91,7 +93,7 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
             score_triagem=score,
             feedback_triagem=feedback,
             status=novo_status,
-            data_triagem=datetime.now(timezone.utc),
+            data_triagem=datetime.now(UTC),
         )
 
         if db_candidatura.status == StatusCandidatura.aprovada_triagem:
@@ -126,7 +128,7 @@ def read_candidatura(id: UUID, db: Session = Depends(get_db)):
     return db_candidatura
 
 
-@router.get("/vaga/{vaga_id}", response_model=List[CandidaturaResponse])
+@router.get("/vaga/{vaga_id}", response_model=list[CandidaturaResponse])
 def read_candidaturas_by_vaga(vaga_id: UUID, db: Session = Depends(get_db)):
     """Lista todas as candidaturas de uma vaga específica."""
     db_vaga = get_vaga(db, vaga_id=vaga_id)
@@ -138,7 +140,7 @@ def read_candidaturas_by_vaga(vaga_id: UUID, db: Session = Depends(get_db)):
     return get_candidaturas_by_vaga(db, vaga_id=vaga_id)
 
 
-@router.get("/candidato/{candidato_id}", response_model=List[CandidaturaResponse])
+@router.get("/candidato/{candidato_id}", response_model=list[CandidaturaResponse])
 def read_candidaturas_by_candidato(candidato_id: UUID, db: Session = Depends(get_db)):
     """Lista todas as candidaturas de um candidato específico."""
     db_candidato = get_candidato(db, candidato_id=candidato_id)

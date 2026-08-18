@@ -1,6 +1,8 @@
+from collections.abc import Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
+from sqlalchemy.orm import Session, sessionmaker
+
 from app.core.config import settings
 
 # Usando psycopg v3 como driver padrão

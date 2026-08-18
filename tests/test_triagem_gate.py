@@ -1,13 +1,15 @@
-from uuid import uuid4
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
-from app.models.enums import StatusCandidatura
-from app.models.vaga import Vaga
-from app.models.candidatura import Candidatura
-from app.models.entrevista import Entrevista
+
 from app.core.database import get_db
 from app.main import app
+from app.models.candidatura import Candidatura
+from app.models.entrevista import Entrevista
+from app.models.enums import StatusCandidatura
+from app.models.vaga import Vaga
 
 
 def test_status_candidatura_enum_values():
@@ -62,7 +64,7 @@ def test_register_entrevista_allowed_when_aprovada_triagem():
             if not getattr(obj, "id", None):
                 obj.id = uuid4()
             if not getattr(obj, "data_criacao", None):
-                obj.data_criacao = datetime.now(timezone.utc)
+                obj.data_criacao = datetime.now(UTC)
             if not getattr(obj, "perguntas", None):
                 obj.perguntas = []
 

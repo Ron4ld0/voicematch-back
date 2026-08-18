@@ -1,17 +1,19 @@
-from pydantic import ConfigDict, BaseModel, Field
-from typing import Optional, Dict, Any
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from app.models.enums import StatusVaga
 
 
 class VagaBase(BaseModel):
     titulo: str = Field(..., max_length=255)
     descricao: str
-    descricao_candidato_ideal: Optional[str] = None
-    requisitos_hard: Optional[Dict[str, Any]] = None
-    requisitos_soft: Optional[Dict[str, Any]] = None
-    score_minimo_triagem: Optional[float] = None
+    descricao_candidato_ideal: str | None = None
+    requisitos_hard: dict[str, Any] | None = None
+    requisitos_soft: dict[str, Any] | None = None
+    score_minimo_triagem: float | None = None
     status: StatusVaga
 
 
@@ -20,13 +22,13 @@ class VagaCreate(VagaBase):
 
 
 class VagaUpdate(BaseModel):
-    titulo: Optional[str] = Field(None, max_length=255)
-    descricao: Optional[str] = None
-    descricao_candidato_ideal: Optional[str] = None
-    requisitos_hard: Optional[Dict[str, Any]] = None
-    requisitos_soft: Optional[Dict[str, Any]] = None
-    score_minimo_triagem: Optional[float] = None
-    status: Optional[StatusVaga] = None
+    titulo: str | None = Field(None, max_length=255)
+    descricao: str | None = None
+    descricao_candidato_ideal: str | None = None
+    requisitos_hard: dict[str, Any] | None = None
+    requisitos_soft: dict[str, Any] | None = None
+    score_minimo_triagem: float | None = None
+    status: StatusVaga | None = None
 
 
 class VagaResponse(VagaBase):

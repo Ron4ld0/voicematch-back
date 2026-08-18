@@ -1,15 +1,17 @@
-from uuid import uuid4
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
 import pytest
+from fastapi.testclient import TestClient
+
+from app.core.database import get_db
+from app.main import app
 from app.models.enums import StatusCandidatura
 from app.services.curriculo_parser import extrair_texto_curriculo
 from app.services.triagem_service import (
-    analisar_curriculo,
     _parse_and_validate_response,
+    analisar_curriculo,
 )
-from app.core.database import get_db
-from app.main import app
-from fastapi.testclient import TestClient
 
 
 def test_curriculo_parser_invalid_extension():
@@ -70,7 +72,9 @@ def test_analisar_curriculo_success(mock_get_client):
 @patch("app.services.triagem_service._get_groq_client")
 @patch("app.services.triagem_service.extrair_texto_curriculo")
 def test_analisar_curriculo_with_local_pdf_file(mock_extrair, mock_get_client):
-    mock_extrair.return_value = "Engenheiro de Software com 5 anos de experiencia em Python e PostgreSQL."
+    mock_extrair.return_value = (
+        "Engenheiro de Software com 5 anos de experiencia em Python e PostgreSQL."
+    )
 
     mock_response = MagicMock()
     mock_response.choices[
@@ -101,7 +105,6 @@ def test_analisar_curriculo_with_local_pdf_file(mock_extrair, mock_get_client):
     mock_extrair.assert_called_once_with("/media/curriculos/maria_curriculo.pdf")
 
 
-
 def test_apply_to_vaga_fallback_on_groq_error():
     vaga_id = uuid4()
     candidato_id = uuid4()
@@ -129,11 +132,15 @@ def test_apply_to_vaga_fallback_on_groq_error():
 
     app.dependency_overrides[get_db] = lambda: mock_db
 
-    with patch(
-        "app.routers.candidatura.create_candidatura", return_value=created_candidatura
-    ), patch(
-        "app.routers.candidatura.analisar_curriculo",
-        side_effect=Exception("API Groq Fora do Ar"),
+    with (
+        patch(
+            "app.routers.candidatura.create_candidatura",
+            return_value=created_candidatura,
+        ),
+        patch(
+            "app.routers.candidatura.analisar_curriculo",
+            side_effect=Exception("API Groq Fora do Ar"),
+        ),
     ):
         client = TestClient(app)
         response = client.post(
