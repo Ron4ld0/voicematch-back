@@ -8,9 +8,6 @@ Create Date: 2026-08-18 12:30:00.000000
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -21,75 +18,79 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    """Upgrade schema: cria as tabelas grupo_habilidade e grupo_habilidade_item."""
-    op.create_table(
-        "grupo_habilidade",
-        sa.Column(
-            "id",
-            postgresql.UUID(as_uuid=True),
-            primary_key=True,
-            nullable=False,
-        ),
-        sa.Column("nome", sa.String(length=255), nullable=False),
-        sa.Column(
-            "tipo",
-            postgresql.ENUM(
-                "HARD",
-                "SOFT",
-                name="tipohabilidadeenum",
-                create_type=False,
-            ),
-            nullable=False,
-        ),
-        sa.Column("descricao", sa.Text(), nullable=True),
-        sa.Column(
-            "empresa_id",
-            postgresql.UUID(as_uuid=True),
-            nullable=True,
-        ),
-        sa.Column(
-            "data_criacao",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    """Upgrade schema: cria enums e tabelas de habilidades e grupos de habilidades."""
+    # 1. Garante que os ENUMs existam de forma segura no PostgreSQL
+    with op.get_context().autocommit_block():
+        op.execute(
+            "DO $$ BEGIN "
+            "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipohabilidadeenum') THEN "
+            "CREATE TYPE tipohabilidadeenum AS ENUM ('HARD', 'SOFT'); "
+            "END IF; "
+            "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'obrigatoriedadeenum') THEN "
+            "CREATE TYPE obrigatoriedadeenum AS ENUM ('OBRIGATORIA', 'DESEJAVEL'); "
+            "END IF; "
+            "END $$;"
+        )
+
+    # 2. Cria tabela de habilidade se não existir (necessária para FKs)
+    op.execute(
+        """
+        CREATE TABLE IF NOT EXISTS habilidade (
+            id UUID PRIMARY KEY,
+            nome VARCHAR NOT NULL,
+            tipo tipohabilidadeenum NOT NULL,
+            categoria VARCHAR NOT NULL,
+            empresa_id UUID
+        );
+        """
     )
 
-    op.create_table(
-        "grupo_habilidade_item",
-        sa.Column(
-            "grupo_id",
-            postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("grupo_habilidade.id", ondelete="CASCADE"),
-            primary_key=True,
-            nullable=False,
-        ),
-        sa.Column(
-            "habilidade_id",
-            postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("habilidade.id", ondelete="CASCADE"),
-            primary_key=True,
-            nullable=False,
-        ),
-        sa.Column("peso", sa.Integer(), nullable=False, server_default="1"),
-        sa.Column(
-            "obrigatoriedade",
-            postgresql.ENUM(
-                "OBRIGATORIA",
-                "DESEJAVEL",
-                name="obrigatoriedadeenum",
-                create_type=False,
-            ),
-            nullable=False,
-            server_default="DESEJAVEL",
-        ),
-        sa.CheckConstraint(
-            "peso >= 1 AND peso <= 10", name="check_grupo_item_peso_range"
-        ),
+    # 3. Cria tabela vaga_habilidade se não existir
+    op.execute(
+        """
+        CREATE TABLE IF NOT EXISTS vaga_habilidade (
+            vaga_id UUID NOT NULL REFERENCES vaga(id) ON DELETE CASCADE,
+            habilidade_id UUID NOT NULL REFERENCES habilidade(id) ON DELETE CASCADE,
+            peso INTEGER NOT NULL DEFAULT 1,
+            obrigatoriedade obrigatoriedadeenum NOT NULL DEFAULT 'DESEJAVEL',
+            CONSTRAINT check_peso_range CHECK (peso >= 1 AND peso <= 10),
+            PRIMARY KEY (vaga_id, habilidade_id)
+        );
+        """
+    )
+
+    # 4. Cria tabela grupo_habilidade
+    op.execute(
+        """
+        CREATE TABLE IF NOT EXISTS grupo_habilidade (
+            id UUID PRIMARY KEY,
+            nome VARCHAR(255) NOT NULL,
+            tipo tipohabilidadeenum NOT NULL,
+            descricao TEXT,
+            empresa_id UUID,
+            data_criacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+        );
+        """
+    )
+
+    # 5. Cria tabela grupo_habilidade_item
+    op.execute(
+        """
+        CREATE TABLE IF NOT EXISTS grupo_habilidade_item (
+            grupo_id UUID NOT NULL REFERENCES grupo_habilidade(id) ON DELETE CASCADE,
+            habilidade_id UUID NOT NULL REFERENCES habilidade(id) ON DELETE CASCADE,
+            peso INTEGER NOT NULL DEFAULT 1,
+            obrigatoriedade obrigatoriedadeenum NOT NULL DEFAULT 'DESEJAVEL',
+            CONSTRAINT check_grupo_item_peso_range CHECK (peso >= 1 AND peso <= 10),
+            PRIMARY KEY (grupo_id, habilidade_id)
+        );
+        """
     )
 
 
 def downgrade() -> None:
-    """Downgrade schema: remove as tabelas grupo_habilidade_item e grupo_habilidade."""
-    op.drop_table("grupo_habilidade_item")
-    op.drop_table("grupo_habilidade")
+    """Downgrade schema: remove as tabelas criadas."""
+    op.execute("DROP TABLE IF EXISTS grupo_habilidade_item CASCADE;")
+    op.execute("DROP TABLE IF EXISTS grupo_habilidade CASCADE;")
+    op.execute("DROP TABLE IF EXISTS vaga_habilidade CASCADE;")
+    op.execute("DROP TABLE IF EXISTS habilidade CASCADE;")
