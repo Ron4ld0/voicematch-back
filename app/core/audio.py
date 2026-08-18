@@ -1,7 +1,9 @@
 import os
-import aiofiles
 import uuid
+
+import aiofiles
 from fastapi import UploadFile
+
 from app.core.config import settings
 
 

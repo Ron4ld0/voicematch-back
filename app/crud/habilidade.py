@@ -1,7 +1,8 @@
 import uuid
-from typing import List, Optional
+
 from sqlalchemy.orm import Session
-from app.models.habilidade import Habilidade, VagaHabilidade, TipoHabilidadeEnum
+
+from app.models.habilidade import Habilidade, TipoHabilidadeEnum, VagaHabilidade
 from app.schemas.habilidade import (
     HabilidadeCreate,
     HabilidadeUpdate,
@@ -16,6 +17,7 @@ def get_habilidade_by_id(db: Session, habilidade_id: uuid.UUID) -> Habilidade | 
 def update_habilidade(
     db: Session, db_habilidade: Habilidade, habilidade_in: HabilidadeUpdate
 ) -> Habilidade:
+
     update_data = habilidade_in.model_dump(exclude_unset=True)
 
     for key, value in update_data.items():
@@ -51,8 +53,8 @@ def get_habilidades(
     db: Session,
     skip: int = 0,
     limit: int = 100,
-    nome: Optional[str] = None,
-    tipo: Optional[TipoHabilidadeEnum] = None,
+    nome: str | None = None,
+    tipo: TipoHabilidadeEnum | None = None,
 ):
     query = db.query(Habilidade)
 
@@ -73,8 +75,8 @@ def get_habilidades_por_vaga(db: Session, vaga_id: uuid.UUID):
 
 
 def sincronizar_habilidades_vaga(
-    db: Session, vaga_id: uuid.UUID, habilidades_in: List[VagaHabilidadeCreate]
-) -> List[VagaHabilidade]:
+    db: Session, vaga_id: uuid.UUID, habilidades_in: list[VagaHabilidadeCreate]
+) -> list[VagaHabilidade]:
     """
     Sincroniza as habilidades de uma vaga. Remove as antigas e insere as novas,
     garantindo que o banco fique exatamente igual à lista enviada pelo frontend.

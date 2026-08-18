@@ -1,33 +1,34 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
+
 from app.core.database import get_db
+from app.crud.candidatura import get_candidatura
+from app.crud.entrevista import (
+    create_entrevista,
+    create_pergunta,
+    create_resposta,
+    delete_entrevista,
+    delete_pergunta,
+    get_entrevista,
+    get_entrevistas_by_candidatura,
+    get_pergunta,
+    get_pergunta_by_entrevista_and_ordem,
+    get_resposta_by_pergunta,
+    inicializar_entrevista_automatica,
+    update_entrevista,
+)
+from app.models.enums import StatusCandidatura
 from app.schemas.entrevista import (
     EntrevistaCreate,
-    EntrevistaUpdate,
     EntrevistaResponse,
+    EntrevistaUpdate,
     PerguntaCreate,
     PerguntaResponse,
     RespostaCreate,
     RespostaResponse,
 )
-from app.crud.entrevista import (
-    create_entrevista,
-    get_entrevista,
-    get_entrevistas_by_candidatura,
-    inicializar_entrevista_automatica,
-    update_entrevista,
-    delete_entrevista,
-    create_pergunta,
-    get_pergunta,
-    get_pergunta_by_entrevista_and_ordem,
-    delete_pergunta,
-    create_resposta,
-    get_resposta_by_pergunta,
-)
-from app.models.enums import StatusCandidatura
-from app.crud.candidatura import get_candidatura
 
 router = APIRouter(tags=["Entrevistas"])
 
@@ -57,7 +58,7 @@ def register_entrevista(entrevista_in: EntrevistaCreate, db: Session = Depends(g
 
 @router.get(
     "/candidaturas/{candidatura_id}/entrevistas",
-    response_model=List[EntrevistaResponse],
+    response_model=list[EntrevistaResponse],
 )
 def list_entrevistas_by_candidatura(
     candidatura_id: UUID, db: Session = Depends(get_db)
@@ -69,8 +70,6 @@ def list_entrevistas_by_candidatura(
         )
         entrevistas = [entrevista_nova]
     return entrevistas
-
-
 
 
 @router.post("/entrevistas/{id}/finalizar", response_model=EntrevistaResponse)
@@ -158,7 +157,7 @@ def add_pergunta_to_entrevista(
     return create_pergunta(db, entrevista_id=id, pergunta_in=pergunta_in)
 
 
-@router.get("/entrevistas/{id}/perguntas", response_model=List[PerguntaResponse])
+@router.get("/entrevistas/{id}/perguntas", response_model=list[PerguntaResponse])
 def list_perguntas_by_entrevista(id: UUID, db: Session = Depends(get_db)):
     """Lista todas as perguntas de uma entrevista ordenadas por posição."""
     db_entrevista = get_entrevista(db, entrevista_id=id)

@@ -1,23 +1,24 @@
 import uuid
-from typing import Optional
-from fastapi import APIRouter, Depends, status, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models.habilidade import TipoHabilidadeEnum
-
 from app.core.database import get_db
+from app.crud.habilidade import (
+    create_habilidade,
+    delete_habilidade,
+    get_habilidade_by_id,
+    get_habilidades,
+    update_habilidade,
+)
+from app.models.habilidade import TipoHabilidadeEnum
 from app.schemas.habilidade import (
     HabilidadeCreate,
     HabilidadeResponse,
     HabilidadeUpdate,
 )
-from app.crud.habilidade import (
-    create_habilidade,
-    get_habilidades,
-    get_habilidade_by_id,
-    update_habilidade,
-    delete_habilidade,
-)
+
+router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
 
 router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
 
@@ -38,8 +39,8 @@ def cadastrar_habilidade(
 def listar_habilidades(
     skip: int = 0,
     limit: int = 100,
-    nome: Optional[str] = None,
-    tipo: Optional[TipoHabilidadeEnum] = None,
+    nome: str | None = None,
+    tipo: TipoHabilidadeEnum | None = None,
     db: Session = Depends(get_db),
 ):
     """

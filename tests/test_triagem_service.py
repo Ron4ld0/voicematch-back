@@ -1,15 +1,17 @@
-from uuid import uuid4
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
 import pytest
+from fastapi.testclient import TestClient
+
+from app.core.database import get_db
+from app.main import app
 from app.models.enums import StatusCandidatura
 from app.services.curriculo_parser import extrair_texto_curriculo
 from app.services.triagem_service import (
-    analisar_curriculo,
     _parse_and_validate_response,
+    analisar_curriculo,
 )
-from app.core.database import get_db
-from app.main import app
-from fastapi.testclient import TestClient
 
 
 def test_curriculo_parser_invalid_extension():
@@ -130,11 +132,15 @@ def test_apply_to_vaga_fallback_on_groq_error():
 
     app.dependency_overrides[get_db] = lambda: mock_db
 
-    with patch(
-        "app.routers.candidatura.create_candidatura", return_value=created_candidatura
-    ), patch(
-        "app.routers.candidatura.analisar_curriculo",
-        side_effect=Exception("API Groq Fora do Ar"),
+    with (
+        patch(
+            "app.routers.candidatura.create_candidatura",
+            return_value=created_candidatura,
+        ),
+        patch(
+            "app.routers.candidatura.analisar_curriculo",
+            side_effect=Exception("API Groq Fora do Ar"),
+        ),
     ):
         client = TestClient(app)
         response = client.post(

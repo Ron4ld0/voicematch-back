@@ -1,8 +1,9 @@
 import io
 import os
+
+import docx
 import httpx
 import pdfplumber
-import docx
 
 
 def extrair_texto_curriculo(curriculo_url: str) -> str:

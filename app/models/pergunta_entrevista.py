@@ -1,15 +1,14 @@
 from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import Optional
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.entrevista import Entrevista
     from app.models.resposta_entrevista import RespostaEntrevista
 
-from sqlalchemy import ForeignKey, Text, Integer, DateTime, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,10 +41,10 @@ class PerguntaEntrevista(Base):
     )
 
     # Relacionamentos
-    entrevista: Mapped["Entrevista"] = relationship(
+    entrevista: Mapped[Entrevista] = relationship(
         "Entrevista", back_populates="perguntas"
     )
-    resposta: Mapped[Optional["RespostaEntrevista"]] = relationship(
+    resposta: Mapped[RespostaEntrevista | None] = relationship(
         "RespostaEntrevista",
         back_populates="pergunta",
         cascade="all, delete-orphan",

@@ -1,13 +1,14 @@
 import json
 import logging
-import httpx
-from app.core.config import settings
-from app.models.enums import StatusCandidatura, StatusEntrevista
-from datetime import datetime, timezone
-from sqlalchemy.orm import Session
+from datetime import UTC, datetime
 from uuid import UUID
-from typing import Optional, List
+
+import httpx
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
 from app.models.entrevista import Entrevista
+from app.models.enums import StatusCandidatura, StatusEntrevista
 from app.models.pergunta_entrevista import PerguntaEntrevista
 from app.models.resposta_entrevista import RespostaEntrevista
 from app.schemas.entrevista import (
@@ -28,13 +29,13 @@ PERGUNTA_INICIAL_PADRAO = (
 )
 
 
-def get_entrevista(db: Session, entrevista_id: UUID) -> Optional[Entrevista]:
+def get_entrevista(db: Session, entrevista_id: UUID) -> Entrevista | None:
     return db.query(Entrevista).filter(Entrevista.id == entrevista_id).first()
 
 
 def get_entrevistas_by_candidatura(
     db: Session, candidatura_id: UUID
-) -> List[Entrevista]:
+) -> list[Entrevista]:
     return (
         db.query(Entrevista).filter(Entrevista.candidatura_id == candidatura_id).all()
     )
@@ -68,7 +69,7 @@ def inicializar_entrevista_automatica(db: Session, candidatura_id: UUID) -> Entr
     entrevista_in = EntrevistaCreate(
         candidatura_id=candidatura_id,
         status="agendada",
-        data_inicio=datetime.now(timezone.utc),
+        data_inicio=datetime.now(UTC),
     )
     db_entrevista = create_entrevista(db, entrevista_in=entrevista_in)
 
@@ -93,7 +94,7 @@ def update_entrevista(
 
 
 # Operações de Perguntas
-def get_pergunta(db: Session, pergunta_id: UUID) -> Optional[PerguntaEntrevista]:
+def get_pergunta(db: Session, pergunta_id: UUID) -> PerguntaEntrevista | None:
     return (
         db.query(PerguntaEntrevista)
         .filter(PerguntaEntrevista.id == pergunta_id)
@@ -103,7 +104,7 @@ def get_pergunta(db: Session, pergunta_id: UUID) -> Optional[PerguntaEntrevista]
 
 def get_pergunta_by_entrevista_and_ordem(
     db: Session, entrevista_id: UUID, ordem: int
-) -> Optional[PerguntaEntrevista]:
+) -> PerguntaEntrevista | None:
     return (
         db.query(PerguntaEntrevista)
         .filter(
@@ -131,7 +132,7 @@ def create_pergunta(
 # Operações de Respostas
 def get_resposta_by_pergunta(
     db: Session, pergunta_id: UUID
-) -> Optional[RespostaEntrevista]:
+) -> RespostaEntrevista | None:
     return (
         db.query(RespostaEntrevista)
         .filter(RespostaEntrevista.pergunta_id == pergunta_id)
@@ -174,7 +175,6 @@ def delete_pergunta(db: Session, pergunta_id: UUID) -> bool:
     db.delete(db_pergunta)
     db.commit()
     return True
-
 
 
 logger = logging.getLogger(__name__)
@@ -223,9 +223,13 @@ async def processar_finalizacao_entrevista(
             )
         if db_entrevista.candidatura.score_triagem is not None:
             try:
-                triagem_info["score_triagem"] = float(db_entrevista.candidatura.score_triagem)
+                triagem_info["score_triagem"] = float(
+                    db_entrevista.candidatura.score_triagem
+                )
             except Exception:  # noqa: BLE001
-                triagem_info["score_triagem"] = str(db_entrevista.candidatura.score_triagem)
+                triagem_info["score_triagem"] = str(
+                    db_entrevista.candidatura.score_triagem
+                )
 
     # Chamar IA para gerar parecer final consolidado
     try:

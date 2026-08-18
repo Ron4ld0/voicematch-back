@@ -1,21 +1,23 @@
+import logging
+from uuid import UUID
+
 import httpx
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
-from uuid import UUID
+
+from app.core.audio import save_audio_file
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.audio import save_audio_file
 from app.crud.candidato import get_candidato
 from app.crud.entrevista import (
+    create_pergunta,
+    create_resposta,
+    get_entrevistas_by_candidatura,
     get_pergunta,
     get_resposta_by_pergunta,
-    create_resposta,
-    create_pergunta,
-    get_entrevistas_by_candidatura,
     inicializar_entrevista_automatica,
 )
-from app.schemas.entrevista import RespostaCreate, RespostaResponse, PerguntaCreate
-import logging
+from app.schemas.entrevista import PerguntaCreate, RespostaCreate, RespostaResponse
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +67,9 @@ async def upload_audio_resposta(
                         else:
                             target_pergunta_id = entrevistas[0].perguntas[0].id
             except Exception as ex:  # noqa: BLE001
-                logger.warning(f"Não foi possível resolver UUID de '{pergunta_id}': {ex}")
+                logger.warning(
+                    f"Não foi possível resolver UUID de '{pergunta_id}': {ex}"
+                )
 
     if not target_pergunta_id:
         raise HTTPException(
@@ -181,6 +185,8 @@ async def upload_audio_resposta(
 
             await processar_finalizacao_entrevista(db, db_pergunta.entrevista)
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}")
+            logger.warning(
+                f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}"
+            )
 
     return db_resposta

@@ -1,6 +1,7 @@
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, AsyncMock, patch
+
 from fastapi.testclient import TestClient
 
 from app.core.database import get_db
@@ -12,7 +13,7 @@ def test_read_candidatura_returns_triage_metadata():
     candidatura_id = uuid4()
     vaga_id = uuid4()
     candidato_id = uuid4()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     mock_candidatura = MagicMock()
     mock_candidatura.id = candidatura_id
@@ -52,7 +53,7 @@ def test_upload_audio_resposta_saves_acoustics_and_next_question(
 ):
     pergunta_id = uuid4()
     entrevista_id = uuid4()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     mock_save_audio.return_value = "/media/audio/test_response.wav"
 
@@ -104,9 +105,10 @@ def test_upload_audio_resposta_saves_acoustics_and_next_question(
 
     app.dependency_overrides[get_db] = lambda: mock_db
 
-    with patch(
-        "app.routers.audio.create_resposta", return_value=mock_created_resposta
-    ), patch("app.routers.audio.create_pergunta") as mock_create_pergunta:
+    with (
+        patch("app.routers.audio.create_resposta", return_value=mock_created_resposta),
+        patch("app.routers.audio.create_pergunta") as mock_create_pergunta,
+    ):
         client = TestClient(app)
         response = client.post(
             f"/audio/upload/{pergunta_id}",

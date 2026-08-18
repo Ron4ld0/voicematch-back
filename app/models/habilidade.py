@@ -3,14 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.models.vaga import Vaga
     from app.models.habilidade import Habilidade
+    from app.models.vaga import Vaga
 
 
 import enum
 import uuid
-from sqlalchemy import String, Integer, ForeignKey, Enum as SQLEnum, CheckConstraint
+
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, String
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.models.base import Base
 
 if TYPE_CHECKING:
@@ -58,6 +61,6 @@ class VagaHabilidade(Base):
         SQLEnum(ObrigatoriedadeEnum), default=ObrigatoriedadeEnum.DESEJAVEL
     )
 
-    habilidade: Mapped["Habilidade"] = relationship()
+    habilidade: Mapped[Habilidade] = relationship()
 
-    vaga: Mapped["Vaga"] = relationship(back_populates="habilidades_vinculadas")
+    vaga: Mapped[Vaga] = relationship(back_populates="habilidades_vinculadas")

@@ -1,7 +1,9 @@
-from pydantic import ConfigDict, BaseModel
-from typing import Optional, Dict, Any
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
 from app.models.enums import StatusCandidatura
 
 
@@ -23,9 +25,9 @@ class CandidaturaResponse(BaseModel):
     vaga_id: UUID
     candidato_id: UUID
     status: StatusCandidatura
-    score_triagem: Optional[float] = None
-    feedback_triagem: Optional[Dict[str, Any]] = None
-    data_triagem: Optional[datetime] = None
+    score_triagem: float | None = None
+    feedback_triagem: dict[str, Any] | None = None
+    data_triagem: datetime | None = None
     data_candidatura: datetime
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,23 +1,25 @@
-from pydantic import ConfigDict, BaseModel, Field
-from typing import Optional, Dict, Any, List
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from app.models.enums import StatusEntrevista
 
 
 # Resposta de Pergunta
 class RespostaCreate(BaseModel):
-    audio_url: Optional[str] = None
-    transcricao: Optional[str] = None
-    metricas: Optional[Dict[str, Any]] = None
+    audio_url: str | None = None
+    transcricao: str | None = None
+    metricas: dict[str, Any] | None = None
 
 
 class RespostaResponse(BaseModel):
     id: UUID
     pergunta_id: UUID
-    audio_url: Optional[str]
-    transcricao: Optional[str]
-    metricas: Optional[Dict[str, Any]]
+    audio_url: str | None
+    transcricao: str | None
+    metricas: dict[str, Any] | None
     data_resposta: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -35,7 +37,7 @@ class PerguntaResponse(BaseModel):
     pergunta_texto: str
     ordem: int
     data_criacao: datetime
-    resposta: Optional[RespostaResponse] = None
+    resposta: RespostaResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -44,11 +46,11 @@ class PerguntaResponse(BaseModel):
 class EntrevistaBase(BaseModel):
     candidatura_id: UUID
     status: StatusEntrevista
-    data_inicio: Optional[datetime] = None
-    data_fim: Optional[datetime] = None
-    score_geral: Optional[float] = Field(None, ge=0.0, le=10.0)
-    feedback_candidato: Optional[str] = None
-    feedback_recrutador: Optional[str] = None
+    data_inicio: datetime | None = None
+    data_fim: datetime | None = None
+    score_geral: float | None = Field(None, ge=0.0, le=10.0)
+    feedback_candidato: str | None = None
+    feedback_recrutador: str | None = None
 
 
 class EntrevistaCreate(EntrevistaBase):
@@ -56,17 +58,17 @@ class EntrevistaCreate(EntrevistaBase):
 
 
 class EntrevistaUpdate(BaseModel):
-    status: Optional[StatusEntrevista] = None
-    data_inicio: Optional[datetime] = None
-    data_fim: Optional[datetime] = None
-    score_geral: Optional[float] = Field(None, ge=0.0, le=10.0)
-    feedback_candidato: Optional[str] = None
-    feedback_recrutador: Optional[str] = None
+    status: StatusEntrevista | None = None
+    data_inicio: datetime | None = None
+    data_fim: datetime | None = None
+    score_geral: float | None = Field(None, ge=0.0, le=10.0)
+    feedback_candidato: str | None = None
+    feedback_recrutador: str | None = None
 
 
 class EntrevistaResponse(EntrevistaBase):
     id: UUID
     data_criacao: datetime
-    perguntas: List[PerguntaResponse] = []
+    perguntas: list[PerguntaResponse] = []
 
     model_config = ConfigDict(from_attributes=True)

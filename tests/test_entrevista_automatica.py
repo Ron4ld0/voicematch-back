@@ -1,11 +1,12 @@
-from uuid import uuid4
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 
-from app.models.enums import StatusCandidatura
-from app.crud.entrevista import inicializar_entrevista_automatica
 from app.core.database import get_db
+from app.crud.entrevista import inicializar_entrevista_automatica
 from app.main import app
+from app.models.enums import StatusCandidatura
 
 
 def test_inicializar_entrevista_automatica_unit():
@@ -60,11 +61,15 @@ def test_apply_to_vaga_auto_creates_entrevista_when_approved(mock_analisar):
 
     app.dependency_overrides[get_db] = lambda: mock_db
 
-    with patch(
-        "app.routers.candidatura.create_candidatura", return_value=created_candidatura
-    ), patch(
-        "app.routers.candidatura.inicializar_entrevista_automatica"
-    ) as mock_init_entrevista:
+    with (
+        patch(
+            "app.routers.candidatura.create_candidatura",
+            return_value=created_candidatura,
+        ),
+        patch(
+            "app.routers.candidatura.inicializar_entrevista_automatica"
+        ) as mock_init_entrevista,
+    ):
         client = TestClient(app)
         response = client.post(
             "/candidaturas",

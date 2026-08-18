@@ -1,27 +1,27 @@
-from app.schemas.usuario import (
-    UsuarioCreate,
-    UsuarioUpdate,
-    UsuarioResponse,
-    RecrutadorCreate,
-    RecrutadorResponse,
-)
-from app.schemas.candidato import CandidatoCreate, CandidatoUpdate, CandidatoResponse
-from app.schemas.vaga import VagaCreate, VagaUpdate, VagaResponse
+from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.candidato import CandidatoCreate, CandidatoResponse, CandidatoUpdate
 from app.schemas.candidatura import (
     CandidaturaCreate,
-    CandidaturaStatusUpdate,
     CandidaturaResponse,
+    CandidaturaStatusUpdate,
 )
 from app.schemas.entrevista import (
     EntrevistaCreate,
-    EntrevistaUpdate,
     EntrevistaResponse,
+    EntrevistaUpdate,
     PerguntaCreate,
     PerguntaResponse,
     RespostaCreate,
     RespostaResponse,
 )
-from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.usuario import (
+    RecrutadorCreate,
+    RecrutadorResponse,
+    UsuarioCreate,
+    UsuarioResponse,
+    UsuarioUpdate,
+)
+from app.schemas.vaga import VagaCreate, VagaResponse, VagaUpdate
 
 __all__ = [
     "UsuarioCreate",

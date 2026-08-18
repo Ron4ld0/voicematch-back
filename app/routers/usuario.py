@@ -1,17 +1,18 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
+
 from app.core.database import get_db
-from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
 from app.crud.usuario import (
+    create_usuario,
+    delete_usuario,
     get_usuario,
     get_usuario_by_email,
     get_usuarios,
-    create_usuario,
     update_usuario,
-    delete_usuario,
 )
+from app.schemas.usuario import UsuarioCreate, UsuarioResponse, UsuarioUpdate
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários (Recrutadores)"])
 
@@ -28,7 +29,7 @@ def register_usuario(usuario_in: UsuarioCreate, db: Session = Depends(get_db)):
     return create_usuario(db, usuario_in=usuario_in)
 
 
-@router.get("", response_model=List[UsuarioResponse])
+@router.get("", response_model=list[UsuarioResponse])
 def list_usuarios(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Lista todos os usuários (recrutadores)."""
     return get_usuarios(db, skip=skip, limit=limit)

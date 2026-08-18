@@ -1,13 +1,14 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
+
 from app.core.database import get_db
-from app.schemas.vaga import VagaCreate, VagaUpdate, VagaResponse
-from app.crud.vaga import create_vaga, get_vaga, get_vagas, update_vaga, delete_vaga
-from app.crud.usuario import get_usuario
-from app.schemas.habilidade import VagaHabilidadeCreate, VagaHabilidadeResponse
 from app.crud.habilidade import get_habilidades_por_vaga, sincronizar_habilidades_vaga
+from app.crud.usuario import get_usuario
+from app.crud.vaga import create_vaga, delete_vaga, get_vaga, get_vagas, update_vaga
+from app.schemas.habilidade import VagaHabilidadeCreate, VagaHabilidadeResponse
+from app.schemas.vaga import VagaCreate, VagaResponse, VagaUpdate
 
 router = APIRouter(prefix="/vagas", tags=["Vagas"])
 
@@ -24,7 +25,7 @@ def register_vaga(vaga_in: VagaCreate, db: Session = Depends(get_db)):
     return create_vaga(db, vaga_in=vaga_in)
 
 
-@router.get("", response_model=List[VagaResponse])
+@router.get("", response_model=list[VagaResponse])
 def list_vagas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return get_vagas(db, skip=skip, limit=limit)
 

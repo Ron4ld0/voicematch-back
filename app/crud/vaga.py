@@ -1,15 +1,16 @@
-from sqlalchemy.orm import Session
 from uuid import UUID
-from typing import List, Optional
+
+from sqlalchemy.orm import Session
+
 from app.models.vaga import Vaga
 from app.schemas.vaga import VagaCreate, VagaUpdate
 
 
-def get_vaga(db: Session, vaga_id: UUID) -> Optional[Vaga]:
+def get_vaga(db: Session, vaga_id: UUID) -> Vaga | None:
     return db.query(Vaga).filter(Vaga.id == vaga_id).first()
 
 
-def get_vagas(db: Session, skip: int = 0, limit: int = 100) -> List[Vaga]:
+def get_vagas(db: Session, skip: int = 0, limit: int = 100) -> list[Vaga]:
     return db.query(Vaga).offset(skip).limit(limit).all()
 
 
