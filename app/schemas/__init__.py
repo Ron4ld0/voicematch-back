@@ -14,6 +14,20 @@ from app.schemas.entrevista import (
     RespostaCreate,
     RespostaResponse,
 )
+from app.schemas.grupo_habilidade import (
+    GrupoHabilidadeCreate,
+    GrupoHabilidadeItemCreate,
+    GrupoHabilidadeItemResponse,
+    GrupoHabilidadeResponse,
+    GrupoHabilidadeUpdate,
+)
+from app.schemas.habilidade import (
+    HabilidadeCreate,
+    HabilidadeResponse,
+    HabilidadeUpdate,
+    VagaHabilidadeCreate,
+    VagaHabilidadeResponse,
+)
 from app.schemas.usuario import (
     RecrutadorCreate,
     RecrutadorResponse,
@@ -47,4 +61,14 @@ __all__ = [
     "RespostaResponse",
     "LoginRequest",
     "TokenResponse",
+    "HabilidadeCreate",
+    "HabilidadeUpdate",
+    "HabilidadeResponse",
+    "VagaHabilidadeCreate",
+    "VagaHabilidadeResponse",
+    "GrupoHabilidadeItemCreate",
+    "GrupoHabilidadeItemResponse",
+    "GrupoHabilidadeCreate",
+    "GrupoHabilidadeUpdate",
+    "GrupoHabilidadeResponse",
 ]
