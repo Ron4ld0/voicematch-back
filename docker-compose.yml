@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgresql+psycopg://admin:admin_password@db:5432/voicematch_db
       AI_SERVICE_URL: http://services:8001
       GROQ_API_KEY: ${GROQ_API_KEY:-}
-      GROQ_MODEL_TRIAGEM: ${GROQ_MODEL_TRIAGEM:-llama-3.3-70b-versatile}
+      GROQ_MODEL_TRIAGEM: ${GROQ_MODEL_TRIAGEM:-openai/gpt-oss-120b}
     volumes:
       - ./media/audio:/app/media/audio
 

@@ -176,13 +176,42 @@ Avalie a compatibilidade do candidato com a vaga e responda EXCLUSIVAMENTE com o
         {"role": "user", "content": user_prompt},
     ]
 
-    # Primeira chamada ao Groq
-    response = client.chat.completions.create(
-        model=settings.GROQ_MODEL_TRIAGEM,
-        messages=messages,
-        response_format={"type": "json_object"},
-        temperature=0.2,
-    )
+    # Modelos candidatos em ordem de preferência
+    candidate_models = [settings.GROQ_MODEL_TRIAGEM]
+    for fallback in [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.6-27b",
+        "llama-3.3-70b-versatile",
+    ]:
+        if fallback not in candidate_models:
+            candidate_models.append(fallback)
+
+    response = None
+    used_model = settings.GROQ_MODEL_TRIAGEM
+    last_err = None
+
+    for model_name in candidate_models:
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            used_model = model_name
+            break
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            if "model_not_found" in str(e) or "404" in str(e):
+                logger.warning(
+                    f"Modelo '{model_name}' não disponível na Groq. Tentando próximo modelo da lista..."
+                )
+                continue
+            raise
+
+    if response is None:
+        raise last_err or RuntimeError("Nenhum modelo da Groq pôde ser executado.")
 
     raw_content = response.choices[0].message.content or ""
 
@@ -200,13 +229,14 @@ Avalie a compatibilidade do candidato com a vaga e responda EXCLUSIVAMENTE com o
                 "content": (
                     "ATENÇÃO: Sua resposta anterior não atendeu ao formato JSON exigido. "
                     "Por favor, retorne APENAS um JSON válido contendo exatamente as chaves "
-                    "'score' (float de 0 a 10), 'pontos_fortes' (lista de strings), "
+                    "'score' (float de 0 a 10), 'score_hard_skills' (float), 'score_experiencia' (float), "
+                    "'score_soft_skills' (float), 'pontos_fortes' (lista de strings), "
                     "'gaps' (lista de strings) e 'feedback_texto' (string)."
                 ),
             }
         )
         retry_response = client.chat.completions.create(
-            model=settings.GROQ_MODEL_TRIAGEM,
+            model=used_model,
             messages=messages,
             response_format={"type": "json_object"},
             temperature=0.1,

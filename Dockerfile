@@ -5,11 +5,11 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Instala dependências do Python (aproveita cache do Docker)
+# Instala dependÃªncias do Python (aproveita cache do Docker)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o restante do código da aplicação
+# Copia o restante do cÃ³digo da aplicaÃ§Ã£o
 COPY . .
 
 EXPOSE 8000
