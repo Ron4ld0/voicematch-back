@@ -1,14 +1,15 @@
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
 from app.crud.usuario import get_usuario_by_email
+from app.models.usuario import Usuario
 from app.schemas.auth import LoginRequest, TokenResponse
 from app.schemas.usuario import UsuarioResponse
-from app.models.usuario import Usuario
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 ph = PasswordHasher()

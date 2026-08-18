@@ -1,19 +1,20 @@
-from sqlalchemy.orm import Session
 from uuid import UUID
-from typing import List, Optional
+
+from sqlalchemy.orm import Session
+
 from app.models.candidato import Candidato
 from app.schemas.candidato import CandidatoCreate, CandidatoUpdate
 
 
-def get_candidato(db: Session, candidato_id: UUID) -> Optional[Candidato]:
+def get_candidato(db: Session, candidato_id: UUID) -> Candidato | None:
     return db.query(Candidato).filter(Candidato.id == candidato_id).first()
 
 
-def get_candidato_by_email(db: Session, email: str) -> Optional[Candidato]:
+def get_candidato_by_email(db: Session, email: str) -> Candidato | None:
     return db.query(Candidato).filter(Candidato.email == email).first()
 
 
-def get_candidatos(db: Session, skip: int = 0, limit: int = 100) -> List[Candidato]:
+def get_candidatos(db: Session, skip: int = 0, limit: int = 100) -> list[Candidato]:
     return db.query(Candidato).offset(skip).limit(limit).all()
 
 

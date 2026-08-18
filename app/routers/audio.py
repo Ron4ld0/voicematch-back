@@ -1,21 +1,23 @@
+import logging
+from uuid import UUID
+
 import httpx
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
-from uuid import UUID
+
+from app.core.audio import save_audio_file
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.audio import save_audio_file
 from app.crud.candidato import get_candidato
 from app.crud.entrevista import (
+    create_pergunta,
+    create_resposta,
+    get_entrevistas_by_candidatura,
     get_pergunta,
     get_resposta_by_pergunta,
-    create_resposta,
-    create_pergunta,
-    get_entrevistas_by_candidatura,
     inicializar_entrevista_automatica,
 )
-from app.schemas.entrevista import RespostaCreate, RespostaResponse, PerguntaCreate
-import logging
+from app.schemas.entrevista import PerguntaCreate, RespostaCreate, RespostaResponse
 
 logger = logging.getLogger(__name__)
 
@@ -47,17 +49,27 @@ async def upload_audio_resposta(
                 db_candidato = get_candidato(db, candidato_id=cand_uuid)
                 if db_candidato and db_candidato.candidaturas:
                     cand = db_candidato.candidaturas[0]
-                    entrevistas = get_entrevistas_by_candidatura(db, candidatura_id=cand.id)
+                    entrevistas = get_entrevistas_by_candidatura(
+                        db, candidatura_id=cand.id
+                    )
                     if not entrevistas:
-                        entrevistas = [inicializar_entrevista_automatica(db, candidatura_id=cand.id)]
+                        entrevistas = [
+                            inicializar_entrevista_automatica(
+                                db, candidatura_id=cand.id
+                            )
+                        ]
                     if entrevistas and entrevistas[0].perguntas:
-                        sem_resposta = [p for p in entrevistas[0].perguntas if not p.resposta]
+                        sem_resposta = [
+                            p for p in entrevistas[0].perguntas if not p.resposta
+                        ]
                         if sem_resposta:
                             target_pergunta_id = sem_resposta[0].id
                         else:
                             target_pergunta_id = entrevistas[0].perguntas[0].id
             except Exception as ex:  # noqa: BLE001
-                logger.warning(f"Não foi possível resolver UUID de '{pergunta_id}': {ex}")
+                logger.warning(
+                    f"Não foi possível resolver UUID de '{pergunta_id}': {ex}"
+                )
 
     if not target_pergunta_id:
         raise HTTPException(
@@ -142,7 +154,9 @@ async def upload_audio_resposta(
         resposta_in = RespostaCreate(
             audio_url=audio_url, transcricao=transcricao, metricas=metricas
         )
-        db_resposta = create_resposta(db, pergunta_id=pergunta_id, resposta_in=resposta_in)
+        db_resposta = create_resposta(
+            db, pergunta_id=pergunta_id, resposta_in=resposta_in
+        )
 
     # 6. Regra de Negócio: Ciclo Fixo de 3 Perguntas
     # Ordem 1: Pessoal -> Próxima é Ordem 2 (Fit Cultural)
@@ -150,7 +164,9 @@ async def upload_audio_resposta(
     # Ordem 3: Técnica -> Finalização imediata da sessão de entrevista e disparo do Parecer Consolidado por IA
     if db_pergunta.ordem < 3 and proxima_pergunta_texto:
         nova_ordem = db_pergunta.ordem + 1
-        ja_existe_prox = any(p.ordem == nova_ordem for p in db_pergunta.entrevista.perguntas)
+        ja_existe_prox = any(
+            p.ordem == nova_ordem for p in db_pergunta.entrevista.perguntas
+        )
         if not ja_existe_prox:
             try:
                 create_pergunta(
@@ -166,8 +182,11 @@ async def upload_audio_resposta(
         # Finalização automática após a terceira resposta
         try:
             from app.crud.entrevista import processar_finalizacao_entrevista
+
             await processar_finalizacao_entrevista(db, db_pergunta.entrevista)
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}")
+            logger.warning(
+                f"Erro ao disparar finalização automática da entrevista na 3ª resposta: {e}"
+            )
 
     return db_resposta

@@ -1,14 +1,14 @@
 from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import Optional
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.recrutador import Recrutador
 
-from sqlalchemy import String, DateTime, Enum as SQLEnum, func
+from sqlalchemy import DateTime, String, func
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -27,7 +27,7 @@ class Usuario(Base):
         String(255), nullable=False, unique=True, index=True
     )
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    telefone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    telefone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tipo_usuario: Mapped[TipoUsuario] = mapped_column(
         SQLEnum(TipoUsuario, name="tipo_usuario_enum"),
         nullable=False,
@@ -38,7 +38,7 @@ class Usuario(Base):
     )
 
     # Relacionamento 1:1 com Recrutador
-    recrutador: Mapped[Optional["Recrutador"]] = relationship(
+    recrutador: Mapped[Recrutador | None] = relationship(
         "Recrutador",
         back_populates="usuario",
         cascade="all, delete-orphan",

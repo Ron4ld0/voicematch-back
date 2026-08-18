@@ -1,7 +1,9 @@
 import io
-from uuid import uuid4
 from unittest.mock import MagicMock
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
+
 from app.core.database import get_db
 from app.main import app
 
@@ -32,7 +34,7 @@ def test_upload_curriculo_pdf_success(tmp_path, monkeypatch):
     try:
         client = TestClient(app)
         dummy_pdf = io.BytesIO(b"%PDF-1.4 Fake PDF Content for Testing")
-        
+
         response = client.post(
             f"/candidatos/{candidato_id}/upload-curriculo",
             files={"file": ("meu_curriculo.pdf", dummy_pdf, "application/pdf")},
@@ -58,7 +60,7 @@ def test_upload_curriculo_invalid_extension():
     try:
         client = TestClient(app)
         dummy_txt = io.BytesIO(b"Este e um arquivo texto invalido")
-        
+
         response = client.post(
             f"/candidatos/{candidato_id}/upload-curriculo",
             files={"file": ("arquivo.txt", dummy_txt, "text/plain")},
@@ -78,7 +80,7 @@ def test_upload_curriculo_candidate_not_found():
     try:
         client = TestClient(app)
         dummy_pdf = io.BytesIO(b"%PDF-1.4 Fake PDF Content")
-        
+
         response = client.post(
             f"/candidatos/{candidato_id}/upload-curriculo",
             files={"file": ("curriculo.pdf", dummy_pdf, "application/pdf")},

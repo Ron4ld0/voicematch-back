@@ -1,14 +1,15 @@
 import uuid
-from typing import Optional
+
 from pydantic import BaseModel, Field
-from app.models.habilidade import TipoHabilidadeEnum, ObrigatoriedadeEnum
+
+from app.models.habilidade import ObrigatoriedadeEnum, TipoHabilidadeEnum
 
 
 class HabilidadeBase(BaseModel):
     nome: str = Field(..., example="Python")
     tipo: TipoHabilidadeEnum = Field(..., example="HARD")
     categoria: str = Field(..., example="Backend")
-    empresa_id: Optional[uuid.UUID] = None
+    empresa_id: uuid.UUID | None = None
 
 
 class HabilidadeCreate(HabilidadeBase):
@@ -23,11 +24,10 @@ class HabilidadeResponse(HabilidadeBase):
 
 
 class HabilidadeUpdate(BaseModel):
-    nome: Optional[str] = None
-    tipo: Optional[TipoHabilidadeEnum] = None
-    categoria: Optional[str] = None
-    empresa_id: Optional[uuid.UUID] = None
-
+    nome: str | None = None
+    tipo: TipoHabilidadeEnum | None = None
+    categoria: str | None = None
+    empresa_id: uuid.UUID | None = None
 
 
 class VagaHabilidadeCreate(BaseModel):

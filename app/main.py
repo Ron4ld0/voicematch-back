@@ -1,26 +1,26 @@
-from fastapi import FastAPI, Depends, HTTPException
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.core.database import get_db
-from app.core.config import settings
-from app.core.audio import ensure_audio_dir_exists
+from sqlalchemy.orm import Session
 
-from contextlib import asynccontextmanager
-from app.core.database import SessionLocal
+from app.core.audio import ensure_audio_dir_exists
+from app.core.config import settings
+from app.core.database import SessionLocal, get_db
 from app.core.seed import seed_admin_user
-from app.seeds.seed_habilidades import seed_habilidades
+from app.routers.audio import router as audio_router
 
 # Routers
 from app.routers.auth import router as auth_router
-from app.routers.usuario import router as usuario_router
 from app.routers.candidato import router as candidato_router
-from app.routers.vaga import router as vaga_router
 from app.routers.candidatura import router as candidatura_router
 from app.routers.entrevista import router as entrevista_router
-from app.routers.audio import router as audio_router
 from app.routers.habilidade import router as habilidade_router
+from app.routers.usuario import router as usuario_router
+from app.routers.vaga import router as vaga_router
+from app.seeds.seed_habilidades import seed_habilidades
 
 # Garantir que o diretório de áudio exista ao iniciar
 ensure_audio_dir_exists()

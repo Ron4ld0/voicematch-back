@@ -1,19 +1,21 @@
 from datetime import datetime
-from sqlalchemy.orm import Session
+from typing import Any
 from uuid import UUID
-from typing import List, Optional, Dict, Any
+
+from sqlalchemy.orm import Session
+
 from app.models.candidatura import Candidatura
 from app.models.enums import StatusCandidatura
 from app.schemas.candidatura import CandidaturaCreate, CandidaturaStatusUpdate
 
 
-def get_candidatura(db: Session, candidatura_id: UUID) -> Optional[Candidatura]:
+def get_candidatura(db: Session, candidatura_id: UUID) -> Candidatura | None:
     return db.query(Candidatura).filter(Candidatura.id == candidatura_id).first()
 
 
 def get_candidatura_by_vaga_and_candidato(
     db: Session, vaga_id: UUID, candidato_id: UUID
-) -> Optional[Candidatura]:
+) -> Candidatura | None:
     return (
         db.query(Candidatura)
         .filter(
@@ -23,11 +25,11 @@ def get_candidatura_by_vaga_and_candidato(
     )
 
 
-def get_candidaturas_by_vaga(db: Session, vaga_id: UUID) -> List[Candidatura]:
+def get_candidaturas_by_vaga(db: Session, vaga_id: UUID) -> list[Candidatura]:
     return db.query(Candidatura).filter(Candidatura.vaga_id == vaga_id).all()
 
 
-def get_candidaturas_by_candidato(db: Session, candidato_id: UUID) -> List[Candidatura]:
+def get_candidaturas_by_candidato(db: Session, candidato_id: UUID) -> list[Candidatura]:
     return db.query(Candidatura).filter(Candidatura.candidato_id == candidato_id).all()
 
 
@@ -55,10 +57,10 @@ def update_candidatura_status(
 def update_candidatura_triagem(
     db: Session,
     db_candidatura: Candidatura,
-    score_triagem: Optional[float],
-    feedback_triagem: Optional[Dict[str, Any]],
+    score_triagem: float | None,
+    feedback_triagem: dict[str, Any] | None,
     status: StatusCandidatura,
-    data_triagem: Optional[datetime] = None,
+    data_triagem: datetime | None = None,
 ) -> Candidatura:
     db_candidatura.score_triagem = score_triagem
     db_candidatura.feedback_triagem = feedback_triagem

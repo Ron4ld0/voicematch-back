@@ -1,27 +1,29 @@
 from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional, List, Dict, Any
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from app.models.candidatura import Candidatura
-    from app.models.recrutador import Recrutador
     from app.models.habilidade import VagaHabilidade
+    from app.models.recrutador import Recrutador
 from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Numeric,
     String,
     Text,
-    ForeignKey,
-    DateTime,
-    Numeric,
-    Enum as SQLEnum,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 from app.models.enums import StatusVaga
-
 
 
 class Vaga(Base):
@@ -37,16 +39,10 @@ class Vaga(Base):
     )
     titulo: Mapped[str] = mapped_column(String(255), nullable=False)
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
-    descricao_candidato_ideal: Mapped[Optional[str]] = mapped_column(
-        Text, nullable=True
-    )
-    requisitos_hard: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSONB, nullable=True
-    )
-    requisitos_soft: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSONB, nullable=True
-    )
-    score_minimo_triagem: Mapped[Optional[float]] = mapped_column(
+    descricao_candidato_ideal: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requisitos_hard: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    requisitos_soft: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    score_minimo_triagem: Mapped[float | None] = mapped_column(
         Numeric(4, 2), nullable=True
     )
     status: Mapped[StatusVaga] = mapped_column(
@@ -57,13 +53,11 @@ class Vaga(Base):
     )
 
     # Relacionamentos
-    recrutador: Mapped["Recrutador"] = relationship(
-        "Recrutador", back_populates="vagas"
-    )
-    candidaturas: Mapped[List["Candidatura"]] = relationship(
+    recrutador: Mapped[Recrutador] = relationship("Recrutador", back_populates="vagas")
+    candidaturas: Mapped[list[Candidatura]] = relationship(
         "Candidatura", back_populates="vaga", cascade="all, delete-orphan"
     )
 
-    habilidades_vinculadas: Mapped[list["VagaHabilidade"]] = relationship(
+    habilidades_vinculadas: Mapped[list[VagaHabilidade]] = relationship(
         "VagaHabilidade", back_populates="vaga", cascade="all, delete-orphan"
     )
