@@ -11,6 +11,11 @@ from app.schemas.entrevista import (
     PerguntaCreate,
     RespostaCreate,
 )
+import json
+import logging
+import httpx
+from app.core.config import settings
+from app.models.enums import StatusCandidatura, StatusEntrevista
 
 PERGUNTA_INICIAL_PADRAO = (
     "Olá! Eu sou a Iris, a inteligência artificial do VoiceMatch AI, e vou conduzir a sua entrevista de voz. "
@@ -46,9 +51,7 @@ def create_entrevista(db: Session, entrevista_in: EntrevistaCreate) -> Entrevist
     return db_entrevista
 
 
-def inicializar_entrevista_automatica(
-    db: Session, candidatura_id: UUID
-) -> Entrevista:
+def inicializar_entrevista_automatica(db: Session, candidatura_id: UUID) -> Entrevista:
     """
     Cria uma nova entrevista e adiciona automaticamente a pergunta inicial (Ordem 1)
     se ainda não existir entrevista para esta candidatura.
@@ -168,12 +171,6 @@ def delete_pergunta(db: Session, pergunta_id: UUID) -> bool:
     return True
 
 
-import json
-import logging
-import httpx
-from app.core.config import settings
-from app.models.enums import StatusCandidatura, StatusEntrevista
-
 logger = logging.getLogger(__name__)
 
 
@@ -193,7 +190,9 @@ async def processar_finalizacao_entrevista(
             "etapa": f"Etapa {p.ordem}",
             "pergunta": p.pergunta_texto,
             "resposta": p.resposta.transcricao if p.resposta else "",
-            "metricas": p.resposta.metricas if p.resposta and p.resposta.metricas else {},
+            "metricas": p.resposta.metricas
+            if p.resposta and p.resposta.metricas
+            else {},
         }
         for p in perguntas_ordenadas
     ]
@@ -211,23 +210,35 @@ async def processar_finalizacao_entrevista(
             vaga_titulo = v.titulo
             vaga_reqs = f"Título: {v.titulo}\nDescrição: {v.descricao or ''}\nHard Skills: {v.requisitos_hard}\nSoft Skills: {v.requisitos_soft}"
         if db_entrevista.candidatura.feedback_triagem:
-            triagem_info = dict(db_entrevista.candidatura.feedback_triagem) if isinstance(db_entrevista.candidatura.feedback_triagem, dict) else {}
+            triagem_info = (
+                dict(db_entrevista.candidatura.feedback_triagem)
+                if isinstance(db_entrevista.candidatura.feedback_triagem, dict)
+                else {}
+            )
         if db_entrevista.candidatura.score_triagem is not None:
             try:
-                triagem_info["score_triagem"] = float(db_entrevista.candidatura.score_triagem)
+                triagem_info["score_triagem"] = float(
+                    db_entrevista.candidatura.score_triagem
+                )
             except Exception:
-                triagem_info["score_triagem"] = str(db_entrevista.candidatura.score_triagem)
+                triagem_info["score_triagem"] = str(
+                    db_entrevista.candidatura.score_triagem
+                )
 
     # Chamar IA para gerar parecer final consolidado
     try:
         payload = {
             "question": vaga_reqs or vaga_titulo,
-            "candidate_answer": json.dumps({
-                "candidate_name": cand_nome,
-                "job_title": vaga_titulo,
-                "screening_evaluation": triagem_info,
-                "voice_interview_history": conversation_history,
-            }, ensure_ascii=False, default=str),
+            "candidate_answer": json.dumps(
+                {
+                    "candidate_name": cand_nome,
+                    "job_title": vaga_titulo,
+                    "screening_evaluation": triagem_info,
+                    "voice_interview_history": conversation_history,
+                },
+                ensure_ascii=False,
+                default=str,
+            ),
         }
         async with httpx.AsyncClient(timeout=30.0) as client:
             res_eval = await client.post(
@@ -255,7 +266,8 @@ async def processar_finalizacao_entrevista(
     # Fallback/Cálculo da nota geral se não vier da IA (40% triagem + 60% respostas de áudio da entrevista)
     if db_entrevista.score_geral is None:
         score_triagem = float(
-            (db_entrevista.candidatura and db_entrevista.candidatura.score_triagem) or 7.0
+            (db_entrevista.candidatura and db_entrevista.candidatura.score_triagem)
+            or 7.0
         )
         scores_respostas = []
         for p in db_entrevista.perguntas:
@@ -280,4 +292,3 @@ async def processar_finalizacao_entrevista(
     db.commit()
     db.refresh(db_entrevista)
     return db_entrevista
-

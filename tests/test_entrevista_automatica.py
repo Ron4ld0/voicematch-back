@@ -1,12 +1,9 @@
 from uuid import uuid4
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 
 from app.models.enums import StatusCandidatura
-from app.models.entrevista import Entrevista
-from app.models.pergunta_entrevista import PerguntaEntrevista
-from app.crud.entrevista import inicializar_entrevista_automatica, PERGUNTA_INICIAL_PADRAO
+from app.crud.entrevista import inicializar_entrevista_automatica
 from app.core.database import get_db
 from app.main import app
 
@@ -24,8 +21,10 @@ def test_inicializar_entrevista_automatica_unit():
 
     mock_db.refresh.side_effect = fake_refresh
 
-    entrevista = inicializar_entrevista_automatica(mock_db, candidatura_id=candidatura_id)
-    
+    entrevista = inicializar_entrevista_automatica(
+        mock_db, candidatura_id=candidatura_id
+    )
+
     assert entrevista is not None
     assert mock_db.add.call_count == 2  # Entrevista + Pergunta 1
     assert mock_db.commit.call_count == 2
@@ -61,9 +60,11 @@ def test_apply_to_vaga_auto_creates_entrevista_when_approved(mock_analisar):
 
     app.dependency_overrides[get_db] = lambda: mock_db
 
-    with patch("app.routers.candidatura.create_candidatura", return_value=created_candidatura), \
-         patch("app.routers.candidatura.inicializar_entrevista_automatica") as mock_init_entrevista:
-
+    with patch(
+        "app.routers.candidatura.create_candidatura", return_value=created_candidatura
+    ), patch(
+        "app.routers.candidatura.inicializar_entrevista_automatica"
+    ) as mock_init_entrevista:
         client = TestClient(app)
         response = client.post(
             "/candidaturas",
@@ -73,6 +74,8 @@ def test_apply_to_vaga_auto_creates_entrevista_when_approved(mock_analisar):
             },
         )
         assert response.status_code == 201
-        mock_init_entrevista.assert_called_once_with(mock_db, candidatura_id=created_candidatura.id)
+        mock_init_entrevista.assert_called_once_with(
+            mock_db, candidatura_id=created_candidatura.id
+        )
 
     app.dependency_overrides.clear()

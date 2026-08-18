@@ -1,11 +1,15 @@
 from __future__ import annotations
 import uuid
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.usuario import Usuario
+    from app.models.vaga import Vaga
 
 
 class Recrutador(Base):

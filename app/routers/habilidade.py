@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Optional
+from typing import Optional
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,25 +7,27 @@ from app.models.habilidade import TipoHabilidadeEnum
 
 from app.core.database import get_db
 from app.schemas.habilidade import (
-    HabilidadeCreate, 
-    HabilidadeResponse, 
-    HabilidadeUpdate
+    HabilidadeCreate,
+    HabilidadeResponse,
+    HabilidadeUpdate,
 )
 from app.crud.habilidade import (
-    create_habilidade, 
-    get_habilidades, 
-    get_habilidade_by_id, 
-    update_habilidade, 
-    delete_habilidade)
-
-router = APIRouter(
-    prefix="/habilidades",
-    tags=["Habilidades"]
+    create_habilidade,
+    get_habilidades,
+    get_habilidade_by_id,
+    update_habilidade,
+    delete_habilidade,
 )
 
+router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
 
-@router.post("/", response_model=HabilidadeResponse, status_code=status.HTTP_201_CREATED)
-def cadastrar_habilidade(habilidade_in: HabilidadeCreate, db: Session = Depends(get_db)):
+
+@router.post(
+    "/", response_model=HabilidadeResponse, status_code=status.HTTP_201_CREATED
+)
+def cadastrar_habilidade(
+    habilidade_in: HabilidadeCreate, db: Session = Depends(get_db)
+):
     """
     Cadastra uma nova habilidade no catálogo.
     """
@@ -34,11 +36,11 @@ def cadastrar_habilidade(habilidade_in: HabilidadeCreate, db: Session = Depends(
 
 @router.get("/", response_model=list[HabilidadeResponse])
 def listar_habilidades(
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = 0,
+    limit: int = 100,
     nome: Optional[str] = None,
     tipo: Optional[TipoHabilidadeEnum] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Lista as habilidades cadastradas com paginação, busca textual e filtro por tipo.
@@ -48,32 +50,35 @@ def listar_habilidades(
 
 @router.put("/{habilidade_id}", response_model=HabilidadeResponse)
 def atualizar_habilidade(
-    habilidade_id: uuid.UUID, 
-    habilidade_in: HabilidadeUpdate, 
-    db: Session = Depends(get_db)
+    habilidade_id: uuid.UUID,
+    habilidade_in: HabilidadeUpdate,
+    db: Session = Depends(get_db),
 ):
     """
     Atualiza os dados de uma habilidade existente.
     """
     db_habilidade = get_habilidade_by_id(db, habilidade_id)
     if not db_habilidade:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habilidade não encontrada")
-        
-    return update_habilidade(db=db, db_habilidade=db_habilidade, habilidade_in=habilidade_in)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Habilidade não encontrada"
+        )
+
+    return update_habilidade(
+        db=db, db_habilidade=db_habilidade, habilidade_in=habilidade_in
+    )
 
 
 @router.delete("/{habilidade_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remover_habilidade(
-    habilidade_id: uuid.UUID, 
-    db: Session = Depends(get_db)
-):
+def remover_habilidade(habilidade_id: uuid.UUID, db: Session = Depends(get_db)):
     """
     Remove uma habilidade do catálogo.
     """
     db_habilidade = get_habilidade_by_id(db, habilidade_id)
     if not db_habilidade:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habilidade não encontrada")
-        
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Habilidade não encontrada"
+        )
+
     delete_habilidade(db=db, db_habilidade=db_habilidade)
 
     return None

@@ -81,7 +81,10 @@ def _parse_and_validate_response(raw_text: str) -> Dict[str, Any]:
         score_clamped = max(0.0, min(10.0, round(score_val, 2)))
     except (ValueError, TypeError):
         score_clamped = round(
-            (score_hard_clamped * 0.60) + (score_exp_clamped * 0.25) + (score_soft_clamped * 0.15), 2
+            (score_hard_clamped * 0.60)
+            + (score_exp_clamped * 0.25)
+            + (score_soft_clamped * 0.15),
+            2,
         )
 
     pontos_fortes = data.get("pontos_fortes", [])

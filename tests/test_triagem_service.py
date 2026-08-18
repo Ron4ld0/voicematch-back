@@ -70,7 +70,9 @@ def test_analisar_curriculo_success(mock_get_client):
 @patch("app.services.triagem_service._get_groq_client")
 @patch("app.services.triagem_service.extrair_texto_curriculo")
 def test_analisar_curriculo_with_local_pdf_file(mock_extrair, mock_get_client):
-    mock_extrair.return_value = "Engenheiro de Software com 5 anos de experiencia em Python e PostgreSQL."
+    mock_extrair.return_value = (
+        "Engenheiro de Software com 5 anos de experiencia em Python e PostgreSQL."
+    )
 
     mock_response = MagicMock()
     mock_response.choices[
@@ -99,7 +101,6 @@ def test_analisar_curriculo_with_local_pdf_file(mock_extrair, mock_get_client):
     assert res["score"] == 8.8
     assert res["pontos_fortes"] == ["Experiencia Python"]
     mock_extrair.assert_called_once_with("/media/curriculos/maria_curriculo.pdf")
-
 
 
 def test_apply_to_vaga_fallback_on_groq_error():

@@ -61,10 +61,7 @@ def remove_vaga(id: UUID, db: Session = Depends(get_db)):
 
 
 @router.get("/{vaga_id}/habilidades", response_model=list[VagaHabilidadeResponse])
-def listar_habilidades_da_vaga(
-    vaga_id: UUID, 
-    db: Session = Depends(get_db)
-):
+def listar_habilidades_da_vaga(vaga_id: UUID, db: Session = Depends(get_db)):
     """
     Lista as habilidades e pesos vinculados a uma vaga específica.
     """
@@ -75,10 +72,12 @@ def listar_habilidades_da_vaga(
 def atualizar_habilidades_da_vaga(
     vaga_id: UUID,
     habilidades_in: list[VagaHabilidadeCreate],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
-    Sincroniza as habilidades de uma vaga. 
+    Sincroniza as habilidades de uma vaga.
     A lista enviada substituirá completamente as habilidades anteriores.
     """
-    return sincronizar_habilidades_vaga(db=db, vaga_id=vaga_id, habilidades_in=habilidades_in)
+    return sincronizar_habilidades_vaga(
+        db=db, vaga_id=vaga_id, habilidades_in=habilidades_in
+    )

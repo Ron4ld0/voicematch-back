@@ -4,7 +4,7 @@ from typing import List
 
 
 class DistribuicaoFaixaNota(BaseModel):
-    faixa: str 
+    faixa: str
     quantidade: int
 
 

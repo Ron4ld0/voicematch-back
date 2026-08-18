@@ -34,6 +34,7 @@ router = APIRouter(prefix="/candidaturas", tags=["Candidaturas"])
 def list_candidaturas(db: Session = Depends(get_db)):
     """Lista todas as candidaturas registradas no sistema."""
     from app.models.candidatura import Candidatura
+
     return db.query(Candidatura).all()
 
 

@@ -98,4 +98,3 @@ async def upload_curriculo(
     curriculo_url = await save_curriculo_file(file, candidato_id=id)
     candidato_in = CandidatoUpdate(curriculo_url=curriculo_url)
     return update_candidato(db, db_candidato=db_candidato, candidato_in=candidato_in)
-

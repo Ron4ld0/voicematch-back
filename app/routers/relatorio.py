@@ -6,15 +6,13 @@ from app.core.database import get_db
 from app.schemas.relatorio import RelatorioGeralResponse, RelatorioVagaResponse
 from app.crud.relatorio import obter_totais_gerais, obter_metricas_vaga
 
-router = APIRouter(
-    prefix="/relatorios",
-    tags=["Relatorios e Metricas"]
-)
+router = APIRouter(prefix="/relatorios", tags=["Relatorios e Metricas"])
+
 
 @router.get("/geral", response_model=RelatorioGeralResponse)
 def obter_relatorio_geral(db: Session = Depends(get_db)):
     """
-    Retorna totais consolidados, nota média global, 
+    Retorna totais consolidados, nota média global,
     distribuição por faixa de nota e volume por status.
     """
     return obter_totais_gerais(db=db)

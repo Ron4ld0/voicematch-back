@@ -29,7 +29,6 @@ class HabilidadeUpdate(BaseModel):
     empresa_id: Optional[uuid.UUID] = None
 
 
-
 class VagaHabilidadeCreate(BaseModel):
     habilidade_id: uuid.UUID
     peso: int = Field(..., ge=1, le=10, description="Peso de relevância (1 a 10)")
