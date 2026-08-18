@@ -97,12 +97,12 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
 
         if db_candidatura.status == StatusCandidatura.aprovada_triagem:
             inicializar_entrevista_automatica(db, candidatura_id=db_candidatura.id)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning(
             f"Falha ao executar triagem por IA na candidatura '{db_candidatura.id}': {e}"
         )
         feedback_erro = {
-            "erro": f"falha na triagem automática, revisar manualmente: {str(e)}"
+            "erro": f"falha na triagem automática, revisar manualmente: {e!s}"
         }
         db_candidatura = update_candidatura_triagem(
             db,

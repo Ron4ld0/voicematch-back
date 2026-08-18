@@ -1,3 +1,8 @@
+import json
+import logging
+import httpx
+from app.core.config import settings
+from app.models.enums import StatusCandidatura, StatusEntrevista
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -171,6 +176,7 @@ def delete_pergunta(db: Session, pergunta_id: UUID) -> bool:
     return True
 
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -217,13 +223,9 @@ async def processar_finalizacao_entrevista(
             )
         if db_entrevista.candidatura.score_triagem is not None:
             try:
-                triagem_info["score_triagem"] = float(
-                    db_entrevista.candidatura.score_triagem
-                )
-            except Exception:
-                triagem_info["score_triagem"] = str(
-                    db_entrevista.candidatura.score_triagem
-                )
+                triagem_info["score_triagem"] = float(db_entrevista.candidatura.score_triagem)
+            except Exception:  # noqa: BLE001
+                triagem_info["score_triagem"] = str(db_entrevista.candidatura.score_triagem)
 
     # Chamar IA para gerar parecer final consolidado
     try:
@@ -260,7 +262,7 @@ async def processar_finalizacao_entrevista(
                         )
                     except (ValueError, TypeError):
                         pass
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning(f"Não foi possível gerar parecer final via IA: {e}")
 
     # Fallback/Cálculo da nota geral se não vier da IA (40% triagem + 60% respostas de áudio da entrevista)

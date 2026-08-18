@@ -1,7 +1,13 @@
 from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.recrutador import Recrutador
+
 from sqlalchemy import String, DateTime, Enum as SQLEnum, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship

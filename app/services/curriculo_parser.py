@@ -31,7 +31,7 @@ def extrair_texto_curriculo(curriculo_url: str) -> str:
             file_bytes = response.content
         except Exception as e:
             raise RuntimeError(
-                f"Falha ao baixar o currículo da URL remota ({url_clean}): {str(e)}"
+                f"Falha ao baixar o currículo da URL remota ({url_clean}): {e!s}"
             ) from e
     else:
         file_path = url_clean.replace("file://", "")
@@ -58,7 +58,7 @@ def extrair_texto_curriculo(curriculo_url: str) -> str:
                 file_bytes = f.read()
         except Exception as e:
             raise RuntimeError(
-                f"Erro ao ler o arquivo de currículo local ('{resolved_path}'): {str(e)}"
+                f"Erro ao ler o arquivo de currículo local ('{resolved_path}'): {e!s}"
             ) from e
 
     if not file_bytes:
@@ -83,7 +83,7 @@ def extrair_texto_curriculo(curriculo_url: str) -> str:
             texto_extraido = "\n".join(paragrafos)
     except Exception as e:
         raise RuntimeError(
-            f"Erro ao processar o conteúdo do currículo ({ext}): {str(e)}"
+            f"Erro ao processar o conteúdo do currículo ({ext}): {e!s}"
         ) from e
 
     texto_final = texto_extraido.strip()

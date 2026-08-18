@@ -193,10 +193,8 @@ def seed_habilidades(db: Session = None):
                 total_criadas += 1
 
         db.commit()
-        print(
-            f"[SEED] Seed de habilidades concluído com sucesso! {total_criadas} novas habilidades inseridas."
-        )
-    except Exception as e:
+        print(f"[SEED] Seed de habilidades concluído com sucesso! {total_criadas} novas habilidades inseridas.")
+    except Exception as e:  # noqa: BLE001
         db.rollback()
         print(f"[SEED] Erro ao executar seed de habilidades: {e}")
     finally:

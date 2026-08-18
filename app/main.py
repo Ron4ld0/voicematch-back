@@ -76,9 +76,9 @@ def health_check(db: Session = Depends(get_db)):
         # Tenta executar uma consulta simples no banco
         db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         raise HTTPException(
-            status_code=500, detail=f"Erro de conexão com o banco de dados: {str(e)}"
+            status_code=500, detail=f"Erro de conexão com o banco de dados: {e!s}"
         )
 
 

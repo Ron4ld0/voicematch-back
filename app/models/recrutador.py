@@ -1,6 +1,13 @@
 from __future__ import annotations
 import uuid
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.usuario import Usuario
+    from app.models.vaga import Vaga
+
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship

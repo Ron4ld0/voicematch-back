@@ -1,7 +1,13 @@
 from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import Optional, Dict, Any
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.pergunta_entrevista import PerguntaEntrevista
+
 from sqlalchemy import ForeignKey, Text, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship

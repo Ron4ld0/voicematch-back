@@ -1,6 +1,12 @@
 from __future__ import annotations
 import uuid
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
+from typing import Optional, List, Dict, Any
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.candidatura import Candidatura
+
 from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship

@@ -71,6 +71,8 @@ def list_entrevistas_by_candidatura(
     return entrevistas
 
 
+
+
 @router.post("/entrevistas/{id}/finalizar", response_model=EntrevistaResponse)
 async def finalizar_entrevista_endpoint(id: UUID, db: Session = Depends(get_db)):
     """
