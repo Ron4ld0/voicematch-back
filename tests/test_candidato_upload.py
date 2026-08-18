@@ -1,9 +1,7 @@
 import io
-import os
 from uuid import uuid4
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
-from app.models.candidato import Candidato
 from app.core.database import get_db
 from app.main import app
 

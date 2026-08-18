@@ -1,12 +1,9 @@
 from uuid import uuid4
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 
 from app.models.enums import StatusCandidatura
-from app.models.entrevista import Entrevista
-from app.models.pergunta_entrevista import PerguntaEntrevista
-from app.crud.entrevista import inicializar_entrevista_automatica, PERGUNTA_INICIAL_PADRAO
+from app.crud.entrevista import inicializar_entrevista_automatica
 from app.core.database import get_db
 from app.main import app
 

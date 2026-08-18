@@ -22,5 +22,5 @@ def seed_admin_user(db: Session):
             )
             create_usuario(db, usuario_in=admin_in)
             logger.info("Usuário admin@voicematch.ai/admin123 populado com sucesso.")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning(f"Aviso ao verificar/popular admin inicial: {e}")

@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -27,7 +26,7 @@ from app.crud.entrevista import (
     create_resposta,
     get_resposta_by_pergunta,
 )
-from app.models.enums import StatusCandidatura, StatusEntrevista
+from app.models.enums import StatusCandidatura
 from app.crud.candidatura import get_candidatura
 
 router = APIRouter(tags=["Entrevistas"])
@@ -70,9 +69,6 @@ def list_entrevistas_by_candidatura(
     return entrevistas
 
 
-import json
-import httpx
-from app.core.config import settings
 
 
 @router.post("/entrevistas/{id}/finalizar", response_model=EntrevistaResponse)

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional, List, Dict, Any
 if TYPE_CHECKING:
     from app.models.candidatura import Candidatura
     from app.models.recrutador import Recrutador
+    from app.models.habilidade import VagaHabilidade
 from sqlalchemy import (
     String,
     Text,
