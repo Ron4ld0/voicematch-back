@@ -2,5 +2,9 @@
 node_modules
 media
 .git
+.venv
 __pycache__
 *.pyc
+.pytest_cache
+.vscode
+.ruff_cache

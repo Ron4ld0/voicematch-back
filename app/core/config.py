@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     CURRICULO_UPLOAD_DIR: str = "media/curriculos"
     OPENAI_API_KEY: str | None = None
     GROQ_API_KEY: str | None = None
-    GROQ_MODEL_TRIAGEM: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL_TRIAGEM: str = "openai/gpt-oss-120b"
     AI_SERVICE_URL: str = "http://localhost:8001"
 
     # CORS
