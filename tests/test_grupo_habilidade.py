@@ -147,9 +147,7 @@ def test_atualizar_grupo_habilidade_e_itens(client: TestClient):
         ],
     }
 
-    update_resp = client.put(
-        f"/grupos-habilidades/{grupo_id}", json=update_payload
-    )
+    update_resp = client.put(f"/grupos-habilidades/{grupo_id}", json=update_payload)
     assert update_resp.status_code == 200
     updated_data = update_resp.json()
     assert updated_data["nome"] == "Grupo Atualizado com Sucesso"
@@ -167,5 +165,8 @@ def test_grupo_habilidade_nao_encontrado(client: TestClient):
     """
     fake_id = uuid.uuid4()
     assert client.get(f"/grupos-habilidades/{fake_id}").status_code == 404
-    assert client.put(f"/grupos-habilidades/{fake_id}", json={"nome": "X"}).status_code == 404
+    assert (
+        client.put(f"/grupos-habilidades/{fake_id}", json={"nome": "X"}).status_code
+        == 404
+    )
     assert client.delete(f"/grupos-habilidades/{fake_id}").status_code == 404
