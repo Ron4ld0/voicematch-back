@@ -1,11 +1,12 @@
 import uuid
-from sqlalchemy.orm import Session
-from sqlalchemy import func, case
 
-from app.models.vaga import Vaga
+from sqlalchemy import case, func
+from sqlalchemy.orm import Session
+
 from app.models.candidatura import Candidatura
 from app.models.entrevista import Entrevista
 from app.models.enums import StatusEntrevista
+from app.models.vaga import Vaga
 
 
 def obter_totais_gerais(db: Session):

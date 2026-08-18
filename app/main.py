@@ -18,6 +18,7 @@ from app.routers.candidato import router as candidato_router
 from app.routers.candidatura import router as candidatura_router
 from app.routers.entrevista import router as entrevista_router
 from app.routers.habilidade import router as habilidade_router
+from app.routers.relatorio import router as relatorio_router
 from app.routers.usuario import router as usuario_router
 from app.routers.vaga import router as vaga_router
 from app.seeds.seed_habilidades import seed_habilidades

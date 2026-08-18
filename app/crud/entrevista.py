@@ -17,11 +17,6 @@ from app.schemas.entrevista import (
     PerguntaCreate,
     RespostaCreate,
 )
-import json
-import logging
-import httpx
-from app.core.config import settings
-from app.models.enums import StatusCandidatura, StatusEntrevista
 
 PERGUNTA_INICIAL_PADRAO = (
     "Olá! Eu sou a Iris, a inteligência artificial do VoiceMatch AI, e vou conduzir a sua entrevista de voz. "

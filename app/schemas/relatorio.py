@@ -1,6 +1,6 @@
 import uuid
+
 from pydantic import BaseModel
-from typing import List
 
 
 class DistribuicaoFaixaNota(BaseModel):
@@ -17,12 +17,12 @@ class RelatorioGeralResponse(BaseModel):
     total_vagas: int
     total_candidaturas: int
     nota_media_global: float
-    distribuicao_por_faixa: List[DistribuicaoFaixaNota]
-    volume_por_status: List[MetricaStatus]
+    distribuicao_por_faixa: list[DistribuicaoFaixaNota]
+    volume_por_status: list[MetricaStatus]
 
 
 class RelatorioVagaResponse(BaseModel):
     vaga_id: uuid.UUID
     nota_media_triagem: float
     nota_media_entrevista_voz: float
-    funil_conversao: List[MetricaStatus]
+    funil_conversao: list[MetricaStatus]

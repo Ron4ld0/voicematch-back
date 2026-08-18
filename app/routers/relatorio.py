@@ -1,10 +1,11 @@
 import uuid
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.crud.relatorio import obter_metricas_vaga, obter_totais_gerais
 from app.schemas.relatorio import RelatorioGeralResponse, RelatorioVagaResponse
-from app.crud.relatorio import obter_totais_gerais, obter_metricas_vaga
 
 router = APIRouter(prefix="/relatorios", tags=["Relatorios e Metricas"])
 

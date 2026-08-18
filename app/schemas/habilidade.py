@@ -29,6 +29,7 @@ class HabilidadeUpdate(BaseModel):
     categoria: str | None = None
     empresa_id: uuid.UUID | None = None
 
+
 class VagaHabilidadeCreate(BaseModel):
     habilidade_id: uuid.UUID
     peso: int = Field(..., ge=1, le=10, description="Peso de relevância (1 a 10)")
