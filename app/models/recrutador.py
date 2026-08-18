@@ -13,6 +13,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.usuario import Usuario
+    from app.models.vaga import Vaga
+
 
 class Recrutador(Base):
     __tablename__ = "recrutador"

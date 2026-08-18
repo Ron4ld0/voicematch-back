@@ -12,6 +12,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.candidatura import Candidatura
+
 
 class Candidato(Base):
     __tablename__ = "candidato"

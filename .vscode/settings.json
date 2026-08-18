@@ -1,3 +1,7 @@
 {
-  "terminal.integrated.stickyScroll.enabled": false
+  "terminal.integrated.stickyScroll.enabled": false,
+  "python.analysis.diagnosticSeverityOverrides": {
+        "reportDeprecated": "none"
+  },
+  "editor.showDeprecated": false
 }

@@ -20,6 +20,8 @@ from app.schemas.habilidade import (
 
 router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
 
+router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
+
 
 @router.post(
     "/", response_model=HabilidadeResponse, status_code=status.HTTP_201_CREATED
