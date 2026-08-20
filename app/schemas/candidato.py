@@ -30,6 +30,6 @@ class CandidatoUpdate(BaseModel):
 
 class CandidatoResponse(CandidatoBase):
     id: UUID
-    empresa_id: UUID
+    empresa_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
