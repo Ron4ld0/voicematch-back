@@ -1,6 +1,7 @@
 from app.models.base import Base
 from app.models.candidato import Candidato
 from app.models.candidatura import Candidatura
+from app.models.empresa import Empresa
 from app.models.entrevista import Entrevista
 from app.models.enums import (
     StatusCandidatura,
@@ -27,6 +28,7 @@ __all__ = [
     "Candidato",
     "Vaga",
     "Candidatura",
+    "Empresa",
     "Entrevista",
     "PerguntaEntrevista",
     "RespostaEntrevista",

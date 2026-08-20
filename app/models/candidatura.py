@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from app.models.candidato import Candidato
     from app.models.entrevista import Entrevista
     from app.models.vaga import Vaga
+    from app.models.empresa import Empresa
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -30,6 +31,11 @@ class Candidatura(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    empresa_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("empresa.id", ondelete="CASCADE"),
+        nullable=False,
     )
     vaga_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("vaga.id", ondelete="CASCADE"), nullable=False
@@ -58,6 +64,7 @@ class Candidatura(Base):
     )
 
     # Relacionamentos
+    empresa: Mapped[Empresa] = relationship("Empresa", back_populates="candidaturas")
     vaga: Mapped[Vaga] = relationship("Vaga", back_populates="candidaturas")
     candidato: Mapped[Candidato] = relationship(
         "Candidato", back_populates="candidaturas"

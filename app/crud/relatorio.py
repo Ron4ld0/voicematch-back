@@ -9,13 +9,14 @@ from app.models.enums import StatusEntrevista
 from app.models.vaga import Vaga
 
 
-def obter_totais_gerais(db: Session):
-    total_vagas = db.query(func.count(Vaga.id)).scalar() or 0
-    total_candidaturas = db.query(func.count(Candidatura.id)).scalar() or 0
+def obter_totais_gerais(db: Session, empresa_id: uuid.UUID):
+    total_vagas = db.query(func.count(Vaga.id)).filter(Vaga.empresa_id == empresa_id).scalar() or 0
+    total_candidaturas = db.query(func.count(Candidatura.id)).filter(Candidatura.empresa_id == empresa_id).scalar() or 0
 
     nota_media_global = (
         db.query(func.avg(Entrevista.score_geral))
         .join(Candidatura, Candidatura.id == Entrevista.candidatura_id)
+        .filter(Candidatura.empresa_id == empresa_id)
         .filter(Entrevista.status == StatusEntrevista.concluida)
         .filter(Entrevista.score_geral.isnot(None))
         .scalar()
@@ -24,6 +25,7 @@ def obter_totais_gerais(db: Session):
 
     status_query = (
         db.query(Candidatura.status, func.count(Candidatura.id))
+        .filter(Candidatura.empresa_id == empresa_id)
         .group_by(Candidatura.status)
         .all()
     )
@@ -49,6 +51,7 @@ def obter_totais_gerais(db: Session):
             ),
             func.count(case((Candidatura.score_triagem >= 81, 1))).label("81-100"),
         )
+        .filter(Candidatura.empresa_id == empresa_id)
         .filter(Candidatura.score_triagem.isnot(None))
         .first()
     )
@@ -79,10 +82,11 @@ def obter_totais_gerais(db: Session):
     }
 
 
-def obter_metricas_vaga(db: Session, vaga_id: uuid.UUID):
+def obter_metricas_vaga(db: Session, vaga_id: uuid.UUID, empresa_id: uuid.UUID):
     nota_media_triagem = (
         db.query(func.avg(Candidatura.score_triagem))
         .filter(Candidatura.vaga_id == vaga_id)
+        .filter(Candidatura.empresa_id == empresa_id)
         .filter(Candidatura.score_triagem.isnot(None))
         .scalar()
         or 0.0
@@ -92,6 +96,7 @@ def obter_metricas_vaga(db: Session, vaga_id: uuid.UUID):
         db.query(func.avg(Entrevista.score_geral))
         .join(Candidatura, Candidatura.id == Entrevista.candidatura_id)
         .filter(Candidatura.vaga_id == vaga_id)
+        .filter(Candidatura.empresa_id == empresa_id)
         .filter(Entrevista.status == StatusEntrevista.concluida)
         .filter(Entrevista.score_geral.isnot(None))
         .scalar()
@@ -101,6 +106,7 @@ def obter_metricas_vaga(db: Session, vaga_id: uuid.UUID):
     funil_query = (
         db.query(Candidatura.status, func.count(Candidatura.id))
         .filter(Candidatura.vaga_id == vaga_id)
+        .filter(Candidatura.empresa_id == empresa_id)
         .group_by(Candidatura.status)
         .all()
     )

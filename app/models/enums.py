@@ -2,7 +2,14 @@ from enum import Enum
 
 
 class TipoUsuario(str, Enum):
+    admin_sistema = "admin_sistema"
+    admin_empresa = "admin_empresa"
     recrutador = "recrutador"
+
+
+class StatusEmpresa(str, Enum):
+    ativa = "ativa"
+    suspensa = "suspensa"
 
 
 class StatusVaga(str, Enum):

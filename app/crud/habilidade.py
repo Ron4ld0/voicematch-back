@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.models.habilidade import Habilidade, TipoHabilidadeEnum, VagaHabilidade
 from app.schemas.habilidade import (
@@ -10,8 +11,13 @@ from app.schemas.habilidade import (
 )
 
 
-def get_habilidade_by_id(db: Session, habilidade_id: uuid.UUID) -> Habilidade | None:
-    return db.query(Habilidade).filter(Habilidade.id == habilidade_id).first()
+def get_habilidade_by_id(db: Session, habilidade_id: uuid.UUID, empresa_id: uuid.UUID | None = None) -> Habilidade | None:
+    query = db.query(Habilidade).filter(Habilidade.id == habilidade_id)
+    if empresa_id:
+        query = query.filter(or_(Habilidade.empresa_id == None, Habilidade.empresa_id == empresa_id))
+    else:
+        query = query.filter(Habilidade.empresa_id == None)
+    return query.first()
 
 
 def update_habilidade(
@@ -55,8 +61,14 @@ def get_habilidades(
     limit: int = 100,
     nome: str | None = None,
     tipo: TipoHabilidadeEnum | None = None,
+    empresa_id: uuid.UUID | None = None,
 ):
     query = db.query(Habilidade)
+
+    if empresa_id:
+        query = query.filter(or_(Habilidade.empresa_id == None, Habilidade.empresa_id == empresa_id))
+    else:
+        query = query.filter(Habilidade.empresa_id == None)
 
     if nome:
         query = query.filter(Habilidade.nome.ilike(f"%{nome}%"))

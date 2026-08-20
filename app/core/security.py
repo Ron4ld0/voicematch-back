@@ -50,3 +50,24 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+import uuid
+from app.models.enums import TipoUsuario
+
+def get_current_tenant(current_user: Usuario = Depends(get_current_user)) -> uuid.UUID:
+    if not current_user.recrutador or not current_user.recrutador.empresa_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário não possui uma empresa associada",
+        )
+    return current_user.recrutador.empresa_id
+
+
+def get_admin_user(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    if current_user.tipo_usuario != TipoUsuario.admin_sistema:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: Requer privilégios de administrador do sistema",
+        )
+    return current_user

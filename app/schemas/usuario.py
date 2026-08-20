@@ -8,23 +8,11 @@ from app.core.validators import validar_cnpj
 
 # Sub-esquema de Recrutador
 class RecrutadorCreate(BaseModel):
-    empresa: str = Field(..., max_length=255)
-    cnpj: str | None = Field(None, max_length=18)
     cargo: str | None = Field(None, max_length=100)
-
-    @field_validator("cnpj")
-    @classmethod
-    def _valida_cnpj(cls, v: str | None) -> str | None:
-        # Campo opcional: None e string vazia passam sem validação; o que for
-        # preenchido é validado e normalizado para 14 dígitos.
-        if v is None or not v.strip():
-            return None
-        return validar_cnpj(v)
 
 
 class RecrutadorResponse(BaseModel):
-    empresa: str
-    cnpj: str | None = None
+    empresa_id: UUID | None = None
     cargo: str | None
 
     model_config = ConfigDict(from_attributes=True)
@@ -53,6 +41,7 @@ class UsuarioUpdate(BaseModel):
 class UsuarioResponse(UsuarioBase):
     id: UUID
     tipo_usuario: str
+    empresa_id: UUID | None = None
     data_criacao: datetime
     recrutador: RecrutadorResponse | None = None
 

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.usuario import Usuario
     from app.models.vaga import Vaga
+    from app.models.empresa import Empresa
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -16,6 +17,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.usuario import Usuario
     from app.models.vaga import Vaga
+    from app.models.empresa import Empresa
 
 
 class Recrutador(Base):
@@ -26,13 +28,17 @@ class Recrutador(Base):
         ForeignKey("usuario.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    empresa: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Sem unique: vários recrutadores podem pertencer à mesma empresa.
-    cnpj: Mapped[str | None] = mapped_column(String(14), nullable=True)
+    empresa_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("empresa.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     cargo: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Relacionamento 1:1 com Usuario
     usuario: Mapped[Usuario] = relationship("Usuario", back_populates="recrutador")
+    # Relacionamento N:1 com Empresa
+    empresa: Mapped[Empresa] = relationship("Empresa", back_populates="recrutadores")
     # Relacionamento 1:N com Vaga
     vagas: Mapped[list[Vaga]] = relationship(
         "Vaga", back_populates="recrutador", cascade="all, delete-orphan"

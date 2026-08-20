@@ -17,12 +17,9 @@ def seed_admin_user(db: Session):
                 nome_completo="Admin VoiceMatch",
                 email=admin_email,
                 senha="admin123",
-                recrutador=RecrutadorCreate(
-                    empresa="VoiceMatch AI",
-                    cargo="Recrutador Head",
-                ),
             )
-            create_usuario(db, usuario_in=admin_in)
+            from app.crud.usuario import create_admin_sistema
+            create_admin_sistema(db, usuario_in=admin_in)
             logger.info("Usuário admin@voicematch.ai/admin123 populado com sucesso.")
     except Exception as e:  # noqa: BLE001
         logger.warning(f"Aviso ao verificar/popular admin inicial: {e}")

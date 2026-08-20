@@ -7,7 +7,7 @@ def test_register_and_login_flow(client: TestClient):
         "email": "testauth@voicematch.com",
         "senha": "password123",
         "telefone": "11999999999",
-        "recrutador": {"empresa": "VoiceMatch Tests", "cargo": "Test Engineer"},
+        "recrutador": {"cargo": "Test Engineer"},
     }
 
     # 1. Register User
@@ -27,7 +27,7 @@ def test_register_and_login_flow(client: TestClient):
     assert response.status_code == 201
     user_data = response.json()
     assert user_data["email"] == test_user["email"]
-    assert user_data["recrutador"]["empresa"] == test_user["recrutador"]["empresa"]
+    assert user_data["recrutador"]["cargo"] == test_user["recrutador"]["cargo"]
     user_id = user_data["id"]
 
     # 2. Login with JSON payload

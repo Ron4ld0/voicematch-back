@@ -47,3 +47,7 @@ class Usuario(Base):
         cascade="all, delete-orphan",
         uselist=False,
     )
+
+    @property
+    def empresa_id(self) -> uuid.UUID | None:
+        return self.recrutador.empresa_id if self.recrutador else None

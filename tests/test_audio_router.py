@@ -31,9 +31,12 @@ def test_read_candidatura_returns_triage_metadata():
     mock_candidatura.data_candidatura = now
 
     mock_db = MagicMock()
-    mock_db.query().filter().first.return_value = mock_candidatura
+    mock_db.query.return_value.filter.return_value.first.return_value = mock_candidatura
+    mock_db.query.return_value.filter.return_value.filter.return_value.first.return_value = mock_candidatura
 
     app.dependency_overrides[get_db] = lambda: mock_db
+    from app.core.security import get_current_tenant
+    app.dependency_overrides[get_current_tenant] = lambda: uuid4()
 
     client = TestClient(app)
     response = client.get(f"/candidaturas/{candidatura_id}")
@@ -104,6 +107,8 @@ def test_upload_audio_resposta_saves_acoustics_and_next_question(
     mock_created_resposta.data_resposta = now
 
     app.dependency_overrides[get_db] = lambda: mock_db
+    from app.core.security import get_current_tenant
+    app.dependency_overrides[get_current_tenant] = lambda: uuid4()
 
     with (
         patch("app.routers.audio.create_resposta", return_value=mock_created_resposta),

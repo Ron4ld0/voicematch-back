@@ -22,6 +22,8 @@ from app.routers.habilidade import router as habilidade_router
 from app.routers.relatorio import router as relatorio_router
 from app.routers.usuario import router as usuario_router
 from app.routers.vaga import router as vaga_router
+from app.routers.empresa import router as empresa_router
+from app.routers.admin import router as admin_router
 from app.seeds.seed_grupos_habilidades import seed_grupos_habilidades
 from app.seeds.seed_habilidades import seed_habilidades
 
@@ -63,6 +65,8 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # Include Routers
 app.include_router(auth_router)
+app.include_router(admin_router)
+app.include_router(empresa_router)
 app.include_router(usuario_router)
 app.include_router(candidato_router)
 app.include_router(vaga_router)

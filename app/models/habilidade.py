@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.habilidade import Habilidade
     from app.models.vaga import Vaga
+    from app.models.empresa import Empresa
 
 
 import enum
@@ -12,6 +13,7 @@ import uuid
 
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, String
 from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -40,7 +42,11 @@ class Habilidade(Base):
     )
     categoria: Mapped[str] = mapped_column(String, nullable=False)
 
-    empresa_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)
+    empresa_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("empresa.id", ondelete="CASCADE"), nullable=True
+    )
+
+    empresa: Mapped[Empresa | None] = relationship("Empresa", back_populates="habilidades")
 
 
 class VagaHabilidade(Base):

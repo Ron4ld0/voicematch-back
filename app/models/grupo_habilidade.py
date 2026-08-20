@@ -24,6 +24,7 @@ from app.models.habilidade import ObrigatoriedadeEnum, TipoHabilidadeEnum
 
 if TYPE_CHECKING:
     from app.models.habilidade import Habilidade
+    from app.models.empresa import Empresa
 
 
 class GrupoHabilidade(Base):
@@ -38,11 +39,13 @@ class GrupoHabilidade(Base):
     )
     descricao: Mapped[str | None] = mapped_column(Text, nullable=True)
     empresa_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), nullable=True
+        UUID(as_uuid=True), ForeignKey("empresa.id", ondelete="CASCADE"), nullable=True
     )
     data_criacao: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    empresa: Mapped[Empresa | None] = relationship("Empresa", back_populates="grupos_habilidades")
 
     # Relacionamento com os itens/habilidades vinculadas ao grupo
     itens: Mapped[list[GrupoHabilidadeItem]] = relationship(

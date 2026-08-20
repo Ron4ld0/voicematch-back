@@ -23,6 +23,51 @@ def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> list[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
 
 
+def get_usuarios_por_empresa(db: Session, empresa_id: UUID) -> list[Usuario]:
+    return db.query(Usuario).join(Recrutador).filter(Recrutador.empresa_id == empresa_id).all()
+
+
+def get_admins_sistema(db: Session) -> list[Usuario]:
+    return db.query(Usuario).filter(Usuario.tipo_usuario == TipoUsuario.admin_sistema).all()
+
+
+def create_admin_sistema(db: Session, usuario_in: UsuarioCreate) -> Usuario:
+    senha_hash = ph.hash(usuario_in.senha)
+    db_usuario = Usuario(
+        nome_completo=usuario_in.nome_completo,
+        email=usuario_in.email,
+        senha_hash=senha_hash,
+        telefone=usuario_in.telefone,
+        tipo_usuario=TipoUsuario.admin_sistema,
+    )
+    db.add(db_usuario)
+    db.commit()
+    db.refresh(db_usuario)
+    return db_usuario
+
+
+def create_admin_empresa(db: Session, empresa_id: UUID, usuario_in: UsuarioCreate) -> Usuario:
+    senha_hash = ph.hash(usuario_in.senha)
+    db_usuario = Usuario(
+        nome_completo=usuario_in.nome_completo,
+        email=usuario_in.email,
+        senha_hash=senha_hash,
+        telefone=usuario_in.telefone,
+        tipo_usuario=TipoUsuario.admin_empresa,
+    )
+    db.add(db_usuario)
+    db.flush()
+
+    db_recrutador = Recrutador(
+        id=db_usuario.id, empresa_id=empresa_id, cargo="Administrador"
+    )
+    db.add(db_recrutador)
+
+    db.commit()
+    db.refresh(db_usuario)
+    return db_usuario
+
+
 def create_usuario(db: Session, usuario_in: UsuarioCreate) -> Usuario:
     senha_hash = ph.hash(usuario_in.senha)
 
@@ -37,16 +82,15 @@ def create_usuario(db: Session, usuario_in: UsuarioCreate) -> Usuario:
     db.flush()
 
     # Criar perfil de recrutador na mesma transação
-    empresa = "Não especificada"
-    cnpj = None
+    from app.models.empresa import Empresa
+    empresa_padrao = db.query(Empresa).filter(Empresa.nome == "Empresa Padrão").first()
+    
     cargo = None
     if usuario_in.recrutador:
-        empresa = usuario_in.recrutador.empresa
-        cnpj = usuario_in.recrutador.cnpj
         cargo = usuario_in.recrutador.cargo
 
     db_recrutador = Recrutador(
-        id=db_usuario.id, empresa=empresa, cnpj=cnpj, cargo=cargo
+        id=db_usuario.id, empresa_id=empresa_padrao.id if empresa_padrao else None, cargo=cargo
     )
     db.add(db_recrutador)
 

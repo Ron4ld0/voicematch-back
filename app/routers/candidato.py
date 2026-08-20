@@ -15,6 +15,11 @@ from app.crud.candidato import (
 )
 from app.schemas.candidato import CandidatoCreate, CandidatoResponse, CandidatoUpdate
 
+from app.crud.vaga import get_vaga
+from app.core.security import get_current_tenant
+from app.models.enums import TipoUsuario
+from app.core.security import get_admin_user
+
 router = APIRouter(prefix="/candidatos", tags=["Candidatos"])
 
 
@@ -23,29 +28,47 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
     """
     Cria um novo candidato. Os candidatos não possuem senha e não acessam o sistema.
     """
-    # Verificando se já existe um candidato com este email
-    db_candidato = get_candidato_by_email(db, email=candidato_in.email)
+    if not candidato_in.vaga_id_referencia:
+        raise HTTPException(status_code=400, detail="É necessário informar vaga_id_referencia para criar o candidato.")
+        
+    db_vaga = get_vaga(db, vaga_id=candidato_in.vaga_id_referencia)
+    if not db_vaga:
+        raise HTTPException(status_code=404, detail="Vaga de referência não encontrada.")
+        
+    empresa_id = db_vaga.empresa_id
+
+    # Verificando se já existe um candidato com este email nesta empresa
+    db_candidato = get_candidato_by_email(db, email=candidato_in.email, empresa_id=empresa_id)
     if db_candidato:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Este endereço de email já está cadastrado como candidato.",
+            detail="Este endereço de email já está cadastrado nesta empresa como candidato.",
         )
 
     # Criar o perfil do candidato
-    db_candidato = create_candidato(db, candidato_in=candidato_in)
+    db_candidato = create_candidato(db, candidato_in=candidato_in, empresa_id=empresa_id)
     return db_candidato
 
 
 @router.get("", response_model=list[CandidatoResponse])
-def list_candidatos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Lista todos os candidatos."""
-    return get_candidatos(db, skip=skip, limit=limit)
+def list_candidatos(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db),
+    tenant_id: UUID = Depends(get_current_tenant)
+):
+    """Lista todos os candidatos da empresa atual."""
+    return get_candidatos(db, skip=skip, limit=limit, empresa_id=tenant_id)
 
 
 @router.get("/{id}", response_model=CandidatoResponse)
-def read_candidato(id: UUID, db: Session = Depends(get_db)):
-    """Retorna os dados de um candidato pelo ID."""
-    db_candidato = get_candidato(db, candidato_id=id)
+def read_candidato(
+    id: UUID, 
+    db: Session = Depends(get_db),
+    tenant_id: UUID = Depends(get_current_tenant)
+):
+    """Retorna os dados de um candidato pelo ID (se pertencer à empresa atual)."""
+    db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
     if not db_candidato:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Candidato não encontrado."
@@ -55,10 +78,13 @@ def read_candidato(id: UUID, db: Session = Depends(get_db)):
 
 @router.put("/{id}", response_model=CandidatoResponse)
 def modify_candidato(
-    id: UUID, candidato_in: CandidatoUpdate, db: Session = Depends(get_db)
+    id: UUID, 
+    candidato_in: CandidatoUpdate, 
+    db: Session = Depends(get_db),
+    tenant_id: UUID = Depends(get_current_tenant)
 ):
-    """Atualiza os dados de um candidato."""
-    db_candidato = get_candidato(db, candidato_id=id)
+    """Atualiza os dados de um candidato da empresa."""
+    db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
     if not db_candidato:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Candidato não encontrado."
@@ -67,15 +93,19 @@ def modify_candidato(
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_candidato(id: UUID, db: Session = Depends(get_db)):
-    """Remove um candidato."""
-    success = delete_candidato(db, candidato_id=id)
-    if not success:
+def remove_candidato(
+    id: UUID, 
+    db: Session = Depends(get_db),
+    tenant_id: UUID = Depends(get_current_tenant)
+):
+    """Remove um candidato da empresa."""
+    db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
+    if not db_candidato:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Candidato não encontrado para deleção.",
         )
-    return None
+    success = delete_candidato(db, candidato_id=id)
 
 
 @router.post(

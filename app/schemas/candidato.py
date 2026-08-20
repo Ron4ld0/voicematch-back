@@ -15,7 +15,7 @@ class CandidatoBase(BaseModel):
 
 
 class CandidatoCreate(CandidatoBase):
-    pass
+    vaga_id_referencia: UUID | None = None
 
 
 class CandidatoUpdate(BaseModel):
@@ -30,5 +30,6 @@ class CandidatoUpdate(BaseModel):
 
 class CandidatoResponse(CandidatoBase):
     id: UUID
+    empresa_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
