@@ -15,7 +15,6 @@ from app.crud.candidato import (
 )
 from app.schemas.candidato import CandidatoCreate, CandidatoResponse, CandidatoUpdate
 
-from app.crud.vaga import get_vaga
 from app.core.security import get_current_tenant
 from app.models.enums import TipoUsuario
 from app.core.security import get_admin_user
@@ -29,20 +28,21 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
     Cria um novo candidato. Os candidatos não possuem senha e não acessam o sistema.
     """
     if not candidato_in.vaga_id_referencia:
-        raise HTTPException(status_code=400, detail="É necessário informar vaga_id_referencia para criar o candidato.")
-        
-    db_vaga = get_vaga(db, vaga_id=candidato_in.vaga_id_referencia)
+        raise HTTPException(status_code=400, detail="vaga_id_referencia é obrigatório")
+
+    from app.models.vaga import Vaga
+    db_vaga = db.query(Vaga).filter(Vaga.id == candidato_in.vaga_id_referencia).first()
     if not db_vaga:
-        raise HTTPException(status_code=404, detail="Vaga de referência não encontrada.")
-        
+        raise HTTPException(status_code=400, detail="Vaga de referência não encontrada")
+
     empresa_id = db_vaga.empresa_id
 
-    # Verificando se já existe um candidato com este email nesta empresa
+    # Verificando se já existe um candidato com este email
     db_candidato = get_candidato_by_email(db, email=candidato_in.email, empresa_id=empresa_id)
     if db_candidato:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Este endereço de email já está cadastrado nesta empresa como candidato.",
+            detail="Este endereço de email já está cadastrado como candidato.",
         )
 
     # Criar o perfil do candidato
