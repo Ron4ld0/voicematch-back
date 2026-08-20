@@ -13,8 +13,8 @@ from app.crud.candidatura import (
     get_candidatura,
     get_candidatura_by_vaga_and_candidato,
     get_candidaturas_by_candidato,
-    get_candidaturas_by_vaga,
     get_candidaturas_by_empresa,
+    get_candidaturas_by_vaga,
     update_candidatura_status,
     update_candidatura_triagem,
 )
@@ -46,12 +46,13 @@ def list_candidaturas(
     "", response_model=CandidaturaResponse, status_code=status.HTTP_201_CREATED
 )
 def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_db)):
-    """Cria uma nova candidatura vinculando um candidato a uma vaga e executa a triagem automática por IA. 
+    """Cria uma nova candidatura vinculando um candidato a uma vaga e executa a triagem automática por IA.
     Este endpoint não exige autenticação de recrutador, usa a empresa da vaga."""
     # Como não temos auth de candidato, precisamos bypassar tenant check pegando a empresa da vaga globalmente.
     from app.models.vaga import Vaga
+
     db_vaga = db.query(Vaga).filter(Vaga.id == candidatura_in.vaga_id).first()
-    
+
     if not db_vaga:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -72,9 +73,7 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
         db_candidatura = existing_candidatura
     else:
         db_candidatura = create_candidatura(
-            db, 
-            candidatura_in=candidatura_in, 
-            empresa_id=db_vaga.empresa_id
+            db, candidatura_in=candidatura_in, empresa_id=db_vaga.empresa_id
         )
 
     try:
@@ -125,7 +124,7 @@ def apply_to_vaga(candidatura_in: CandidaturaCreate, db: Session = Depends(get_d
 
 @router.get("/{id}", response_model=CandidaturaResponse)
 def read_candidatura(
-    id: UUID, 
+    id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -140,7 +139,7 @@ def read_candidatura(
 
 @router.get("/vaga/{vaga_id}", response_model=list[CandidaturaResponse])
 def read_candidaturas_by_vaga(
-    vaga_id: UUID, 
+    vaga_id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -156,7 +155,7 @@ def read_candidaturas_by_vaga(
 
 @router.get("/candidato/{candidato_id}", response_model=list[CandidaturaResponse])
 def read_candidaturas_by_candidato(
-    candidato_id: UUID, 
+    candidato_id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -166,13 +165,15 @@ def read_candidaturas_by_candidato(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Candidato não encontrado."
         )
-    return get_candidaturas_by_candidato(db, candidato_id=candidato_id, empresa_id=tenant_id)
+    return get_candidaturas_by_candidato(
+        db, candidato_id=candidato_id, empresa_id=tenant_id
+    )
 
 
 @router.patch("/{id}/status", response_model=CandidaturaResponse)
 def modify_candidatura_status(
-    id: UUID, 
-    status_in: CandidaturaStatusUpdate, 
+    id: UUID,
+    status_in: CandidaturaStatusUpdate,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):

@@ -1,7 +1,7 @@
 import uuid
 
-from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
 from app.models.habilidade import Habilidade, TipoHabilidadeEnum, VagaHabilidade
 from app.schemas.habilidade import (
@@ -11,12 +11,16 @@ from app.schemas.habilidade import (
 )
 
 
-def get_habilidade_by_id(db: Session, habilidade_id: uuid.UUID, empresa_id: uuid.UUID | None = None) -> Habilidade | None:
+def get_habilidade_by_id(
+    db: Session, habilidade_id: uuid.UUID, empresa_id: uuid.UUID | None = None
+) -> Habilidade | None:
     query = db.query(Habilidade).filter(Habilidade.id == habilidade_id)
     if empresa_id:
-        query = query.filter(or_(Habilidade.empresa_id == None, Habilidade.empresa_id == empresa_id))
+        query = query.filter(
+            or_(Habilidade.empresa_id.is_(None), Habilidade.empresa_id == empresa_id)
+        )
     else:
-        query = query.filter(Habilidade.empresa_id == None)
+        query = query.filter(Habilidade.empresa_id.is_(None))
     return query.first()
 
 
@@ -66,9 +70,11 @@ def get_habilidades(
     query = db.query(Habilidade)
 
     if empresa_id:
-        query = query.filter(or_(Habilidade.empresa_id == None, Habilidade.empresa_id == empresa_id))
+        query = query.filter(
+            or_(Habilidade.empresa_id.is_(None), Habilidade.empresa_id == empresa_id)
+        )
     else:
-        query = query.filter(Habilidade.empresa_id == None)
+        query = query.filter(Habilidade.empresa_id.is_(None))
 
     if nome:
         query = query.filter(Habilidade.nome.ilike(f"%{nome}%"))

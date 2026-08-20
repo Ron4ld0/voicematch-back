@@ -1,22 +1,27 @@
 import uuid
 
 from argon2 import PasswordHasher
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import get_admin_user, get_current_tenant
 from app.crud.empresa import (
-    create_empresa, get_empresa, get_empresas, 
-    update_empresa, get_empresa_by_cnpj
+    create_empresa,
+    get_empresa,
+    get_empresa_by_cnpj,
+    get_empresas,
+    update_empresa,
 )
 from app.crud.usuario import (
-    get_usuarios_por_empresa, create_admin_empresa, get_usuario_by_email
+    create_admin_empresa,
+    get_usuario_by_email,
+    get_usuarios_por_empresa,
 )
-from app.models.usuario import Usuario
 from app.models.enums import StatusEmpresa
+from app.models.usuario import Usuario
 from app.schemas.empresa import EmpresaCreate, EmpresaResponse, EmpresaUpdate
-from app.schemas.usuario import UsuarioResponse, UsuarioCreate
+from app.schemas.usuario import UsuarioCreate, UsuarioResponse
 
 router = APIRouter(prefix="/empresas", tags=["Empresas (Multi-tenant)"])
 ph = PasswordHasher()
@@ -48,8 +53,10 @@ def cadastrar_empresa(
     """
     if empresa_in.cnpj:
         if get_empresa_by_cnpj(db, empresa_in.cnpj):
-            raise HTTPException(status_code=409, detail="Já existe empresa com esse CNPJ")
-            
+            raise HTTPException(
+                status_code=409, detail="Já existe empresa com esse CNPJ"
+            )
+
     return create_empresa(db, empresa_in)
 
 
@@ -89,32 +96,31 @@ def convidar_recrutador(
     Cria um usuário recrutador vinculado à empresa do tenant atual.
     """
     from app.crud.usuario import get_usuario_by_email
-    from app.models.usuario import Usuario
-    from app.models.recrutador import Recrutador
     from app.models.enums import TipoUsuario
-    
+    from app.models.recrutador import Recrutador
+    from app.models.usuario import Usuario
+
     if get_usuario_by_email(db, email):
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
-        
+
     senha_temporaria = "Mudar@123"
-    
+
     novo_usuario = Usuario(
         nome_completo=nome_completo,
         email=email,
         senha_hash=ph.hash(senha_temporaria),
-        tipo_usuario=TipoUsuario.recrutador
+        tipo_usuario=TipoUsuario.recrutador,
     )
     db.add(novo_usuario)
     db.flush()
-    
-    novo_recrutador = Recrutador(
-        id=novo_usuario.id,
-        empresa_id=tenant_id
-    )
+
+    novo_recrutador = Recrutador(id=novo_usuario.id, empresa_id=tenant_id)
     db.add(novo_recrutador)
     db.commit()
-    
-    return {"message": f"Usuário criado com sucesso. Senha temporária: {senha_temporaria}"}
+
+    return {
+        "message": f"Usuário criado com sucesso. Senha temporária: {senha_temporaria}"
+    }
 
 
 @router.get("/{empresa_id}", response_model=EmpresaResponse)
@@ -145,11 +151,13 @@ def alterar_empresa(
     db_empresa = get_empresa(db, empresa_id)
     if not db_empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada")
-    
+
     # Validation if CNPJ is updated
     if empresa_in.cnpj and empresa_in.cnpj != db_empresa.cnpj:
         if get_empresa_by_cnpj(db, empresa_in.cnpj):
-            raise HTTPException(status_code=409, detail="Já existe empresa com esse CNPJ")
+            raise HTTPException(
+                status_code=409, detail="Já existe empresa com esse CNPJ"
+            )
 
     return update_empresa(db, db_empresa, empresa_in)
 
@@ -166,11 +174,15 @@ def listar_usuarios_da_empresa(
     empresa = get_empresa(db, empresa_id)
     if not empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada")
-    
+
     return get_usuarios_por_empresa(db, empresa_id)
 
 
-@router.post("/{empresa_id}/usuarios", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{empresa_id}/usuarios",
+    response_model=UsuarioResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 def cadastrar_admin_empresa(
     empresa_id: uuid.UUID,
     usuario_in: UsuarioCreate,
@@ -183,8 +195,8 @@ def cadastrar_admin_empresa(
     empresa = get_empresa(db, empresa_id)
     if not empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada")
-    
+
     if get_usuario_by_email(db, usuario_in.email):
         raise HTTPException(status_code=409, detail="E-mail já cadastrado")
-        
+
     return create_admin_empresa(db, empresa_id, usuario_in)

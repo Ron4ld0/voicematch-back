@@ -36,6 +36,7 @@ def test_read_candidatura_returns_triage_metadata():
 
     app.dependency_overrides[get_db] = lambda: mock_db
     from app.core.security import get_current_tenant
+
     app.dependency_overrides[get_current_tenant] = lambda: uuid4()
 
     client = TestClient(app)
@@ -108,6 +109,7 @@ def test_upload_audio_resposta_saves_acoustics_and_next_question(
 
     app.dependency_overrides[get_db] = lambda: mock_db
     from app.core.security import get_current_tenant
+
     app.dependency_overrides[get_current_tenant] = lambda: uuid4()
 
     with (

@@ -10,8 +10,16 @@ from app.models.vaga import Vaga
 
 
 def obter_totais_gerais(db: Session, empresa_id: uuid.UUID):
-    total_vagas = db.query(func.count(Vaga.id)).filter(Vaga.empresa_id == empresa_id).scalar() or 0
-    total_candidaturas = db.query(func.count(Candidatura.id)).filter(Candidatura.empresa_id == empresa_id).scalar() or 0
+    total_vagas = (
+        db.query(func.count(Vaga.id)).filter(Vaga.empresa_id == empresa_id).scalar()
+        or 0
+    )
+    total_candidaturas = (
+        db.query(func.count(Candidatura.id))
+        .filter(Candidatura.empresa_id == empresa_id)
+        .scalar()
+        or 0
+    )
 
     nota_media_global = (
         db.query(func.avg(Entrevista.score_geral))

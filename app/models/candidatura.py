@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from app.models.candidato import Candidato
+    from app.models.empresa import Empresa
     from app.models.entrevista import Entrevista
     from app.models.vaga import Vaga
-    from app.models.empresa import Empresa
 from sqlalchemy import (
     DateTime,
     ForeignKey,

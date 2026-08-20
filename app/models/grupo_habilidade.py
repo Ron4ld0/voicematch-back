@@ -23,8 +23,8 @@ from app.models.base import Base
 from app.models.habilidade import ObrigatoriedadeEnum, TipoHabilidadeEnum
 
 if TYPE_CHECKING:
-    from app.models.habilidade import Habilidade
     from app.models.empresa import Empresa
+    from app.models.habilidade import Habilidade
 
 
 class GrupoHabilidade(Base):
@@ -45,7 +45,9 @@ class GrupoHabilidade(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    empresa: Mapped[Empresa | None] = relationship("Empresa", back_populates="grupos_habilidades")
+    empresa: Mapped[Empresa | None] = relationship(
+        "Empresa", back_populates="grupos_habilidades"
+    )
 
     # Relacionamento com os itens/habilidades vinculadas ao grupo
     itens: Mapped[list[GrupoHabilidadeItem]] = relationship(

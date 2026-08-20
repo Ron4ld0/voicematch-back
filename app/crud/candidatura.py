@@ -9,7 +9,9 @@ from app.models.enums import StatusCandidatura
 from app.schemas.candidatura import CandidaturaCreate, CandidaturaStatusUpdate
 
 
-def get_candidatura(db: Session, candidatura_id: UUID, empresa_id: UUID | None = None) -> Candidatura | None:
+def get_candidatura(
+    db: Session, candidatura_id: UUID, empresa_id: UUID | None = None
+) -> Candidatura | None:
     query = db.query(Candidatura).filter(Candidatura.id == candidatura_id)
     if empresa_id:
         query = query.filter(Candidatura.empresa_id == empresa_id)
@@ -27,7 +29,9 @@ def get_candidatura_by_vaga_and_candidato(
     return query.first()
 
 
-def get_candidaturas_by_vaga(db: Session, vaga_id: UUID, empresa_id: UUID | None = None) -> list[Candidatura]:
+def get_candidaturas_by_vaga(
+    db: Session, vaga_id: UUID, empresa_id: UUID | None = None
+) -> list[Candidatura]:
     query = db.query(Candidatura).filter(Candidatura.vaga_id == vaga_id)
     if empresa_id:
         query = query.filter(Candidatura.empresa_id == empresa_id)
@@ -38,14 +42,18 @@ def get_candidaturas_by_empresa(db: Session, empresa_id: UUID) -> list[Candidatu
     return db.query(Candidatura).filter(Candidatura.empresa_id == empresa_id).all()
 
 
-def get_candidaturas_by_candidato(db: Session, candidato_id: UUID, empresa_id: UUID | None = None) -> list[Candidatura]:
+def get_candidaturas_by_candidato(
+    db: Session, candidato_id: UUID, empresa_id: UUID | None = None
+) -> list[Candidatura]:
     query = db.query(Candidatura).filter(Candidatura.candidato_id == candidato_id)
     if empresa_id:
         query = query.filter(Candidatura.empresa_id == empresa_id)
     return query.all()
 
 
-def create_candidatura(db: Session, candidatura_in: CandidaturaCreate, empresa_id: UUID) -> Candidatura:
+def create_candidatura(
+    db: Session, candidatura_in: CandidaturaCreate, empresa_id: UUID
+) -> Candidatura:
     db_candidatura = Candidatura(
         vaga_id=candidatura_in.vaga_id,
         candidato_id=candidatura_in.candidato_id,

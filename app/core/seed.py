@@ -2,8 +2,8 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from app.crud.usuario import create_usuario, get_usuario_by_email
-from app.schemas.usuario import RecrutadorCreate, UsuarioCreate
+from app.crud.usuario import get_usuario_by_email
+from app.schemas.usuario import UsuarioCreate
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ def seed_admin_user(db: Session):
                 senha="admin123",
             )
             from app.crud.usuario import create_admin_sistema
+
             create_admin_sistema(db, usuario_in=admin_in)
             logger.info("Usuário admin@voicematch.ai/admin123 populado com sucesso.")
     except Exception as e:  # noqa: BLE001

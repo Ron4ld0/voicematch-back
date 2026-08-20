@@ -4,9 +4,9 @@ import uuid
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from app.models.empresa import Empresa
     from app.models.usuario import Usuario
     from app.models.vaga import Vaga
-    from app.models.empresa import Empresa
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -15,9 +15,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 if TYPE_CHECKING:
+    from app.models.empresa import Empresa
     from app.models.usuario import Usuario
     from app.models.vaga import Vaga
-    from app.models.empresa import Empresa
 
 
 class Recrutador(Base):

@@ -3,9 +3,9 @@ from collections.abc import Generator
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.database import SessionLocal
 from app.core.security import get_current_tenant
+from app.main import app
 
 
 @pytest.fixture(scope="session")
@@ -20,6 +20,7 @@ def db_session():
 @pytest.fixture(scope="session")
 def default_tenant_id(db_session):
     from app.models.empresa import Empresa
+
     empresa = db_session.query(Empresa).filter(Empresa.nome == "Empresa Padrão").first()
     return empresa.id
 

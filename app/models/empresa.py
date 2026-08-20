@@ -5,12 +5,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from app.models.recrutador import Recrutador
-    from app.models.vaga import Vaga
     from app.models.candidato import Candidato
-    from app.models.habilidade import Habilidade
     from app.models.candidatura import Candidatura
     from app.models.grupo_habilidade import GrupoHabilidade
+    from app.models.habilidade import Habilidade
+    from app.models.recrutador import Recrutador
+    from app.models.vaga import Vaga
 
 from sqlalchemy import DateTime, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -19,6 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 from app.models.enums import StatusEmpresa
 
+
 class Empresa(Base):
     __tablename__ = "empresa"
 
@@ -26,11 +27,15 @@ class Empresa(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     nome: Mapped[str] = mapped_column(String(255), nullable=False)
-    status: Mapped[StatusEmpresa] = mapped_column(String(50), nullable=False, default=StatusEmpresa.ativa)
+    status: Mapped[StatusEmpresa] = mapped_column(
+        String(50), nullable=False, default=StatusEmpresa.ativa
+    )
     cnpj: Mapped[str | None] = mapped_column(String(14), nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     plano: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    configuracoes_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    configuracoes_json: Mapped[dict[str, Any] | None] = mapped_column(
+        JSONB, nullable=True
+    )
     missao_visao_valores: Mapped[str | None] = mapped_column(Text, nullable=True)
     data_criacao: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -43,7 +48,7 @@ class Empresa(Base):
         "Vaga", back_populates="empresa", cascade="all, delete-orphan"
     )
 
-    candidatos: Mapped[list["Candidato"]] = relationship(
+    candidatos: Mapped[list[Candidato]] = relationship(
         "Candidato", back_populates="empresa", cascade="all, delete-orphan"
     )
     candidaturas: Mapped[list[Candidatura]] = relationship(

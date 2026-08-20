@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from app.models.empresa import Empresa
     from app.models.habilidade import Habilidade
     from app.models.vaga import Vaga
-    from app.models.empresa import Empresa
 
 
 import enum
@@ -46,7 +46,9 @@ class Habilidade(Base):
         UUID(as_uuid=True), ForeignKey("empresa.id", ondelete="CASCADE"), nullable=True
     )
 
-    empresa: Mapped[Empresa | None] = relationship("Empresa", back_populates="habilidades")
+    empresa: Mapped[Empresa | None] = relationship(
+        "Empresa", back_populates="habilidades"
+    )
 
 
 class VagaHabilidade(Base):

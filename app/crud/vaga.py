@@ -7,11 +7,21 @@ from app.schemas.vaga import VagaCreate, VagaUpdate
 
 
 def get_vaga(db: Session, vaga_id: UUID, empresa_id: UUID) -> Vaga | None:
-    return db.query(Vaga).filter(Vaga.id == vaga_id, Vaga.empresa_id == empresa_id).first()
+    return (
+        db.query(Vaga).filter(Vaga.id == vaga_id, Vaga.empresa_id == empresa_id).first()
+    )
 
 
-def get_vagas(db: Session, empresa_id: UUID, skip: int = 0, limit: int = 100) -> list[Vaga]:
-    return db.query(Vaga).filter(Vaga.empresa_id == empresa_id).offset(skip).limit(limit).all()
+def get_vagas(
+    db: Session, empresa_id: UUID, skip: int = 0, limit: int = 100
+) -> list[Vaga]:
+    return (
+        db.query(Vaga)
+        .filter(Vaga.empresa_id == empresa_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_vaga(db: Session, vaga_in: VagaCreate, empresa_id: UUID) -> Vaga:
@@ -42,7 +52,9 @@ def update_vaga(db: Session, db_vaga: Vaga, vaga_in: VagaUpdate) -> Vaga:
 
 
 def delete_vaga(db: Session, vaga_id: UUID, empresa_id: UUID) -> bool:
-    db_vaga = db.query(Vaga).filter(Vaga.id == vaga_id, Vaga.empresa_id == empresa_id).first()
+    db_vaga = (
+        db.query(Vaga).filter(Vaga.id == vaga_id, Vaga.empresa_id == empresa_id).first()
+    )
     if not db_vaga:
         return False
     db.delete(db_vaga)

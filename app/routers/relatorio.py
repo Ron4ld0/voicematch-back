@@ -13,8 +13,7 @@ router = APIRouter(prefix="/relatorios", tags=["Relatorios e Metricas"])
 
 @router.get("/geral", response_model=RelatorioGeralResponse)
 def obter_relatorio_geral(
-    db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    db: Session = Depends(get_db), tenant_id: uuid.UUID = Depends(get_current_tenant)
 ):
     """
     Retorna totais consolidados, nota média global,
@@ -25,9 +24,9 @@ def obter_relatorio_geral(
 
 @router.get("/vagas/{vaga_id}", response_model=RelatorioVagaResponse)
 def obter_relatorio_vaga(
-    vaga_id: uuid.UUID, 
+    vaga_id: uuid.UUID,
     db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    tenant_id: uuid.UUID = Depends(get_current_tenant),
 ):
     """
     Retorna métricas específicas da vaga selecionada, como notas médias

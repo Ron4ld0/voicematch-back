@@ -16,7 +16,7 @@ router = APIRouter(prefix="/vagas", tags=["Vagas"])
 
 @router.post("", response_model=VagaResponse, status_code=status.HTTP_201_CREATED)
 def register_vaga(
-    vaga_in: VagaCreate, 
+    vaga_in: VagaCreate,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -32,8 +32,8 @@ def register_vaga(
 
 @router.get("", response_model=list[VagaResponse])
 def list_vagas(
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = 0,
+    limit: int = 100,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -42,7 +42,7 @@ def list_vagas(
 
 @router.get("/{id}", response_model=VagaResponse)
 def read_vaga(
-    id: UUID, 
+    id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -56,8 +56,8 @@ def read_vaga(
 
 @router.put("/{id}", response_model=VagaResponse)
 def modify_vaga(
-    id: UUID, 
-    vaga_in: VagaUpdate, 
+    id: UUID,
+    vaga_in: VagaUpdate,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -71,7 +71,7 @@ def modify_vaga(
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_vaga(
-    id: UUID, 
+    id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -86,7 +86,7 @@ def remove_vaga(
 
 @router.get("/{vaga_id}/habilidades", response_model=list[VagaHabilidadeResponse])
 def listar_habilidades_da_vaga(
-    vaga_id: UUID, 
+    vaga_id: UUID,
     db: Session = Depends(get_db),
     tenant_id: UUID = Depends(get_current_tenant),
 ):
@@ -95,7 +95,9 @@ def listar_habilidades_da_vaga(
     """
     db_vaga = get_vaga(db, vaga_id=vaga_id, empresa_id=tenant_id)
     if not db_vaga:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vaga não encontrada.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Vaga não encontrada."
+        )
     return get_habilidades_por_vaga(db=db, vaga_id=vaga_id)
 
 
@@ -112,7 +114,9 @@ def atualizar_habilidades_da_vaga(
     """
     db_vaga = get_vaga(db, vaga_id=vaga_id, empresa_id=tenant_id)
     if not db_vaga:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vaga não encontrada.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Vaga não encontrada."
+        )
     return sincronizar_habilidades_vaga(
         db=db, vaga_id=vaga_id, habilidades_in=habilidades_in
     )

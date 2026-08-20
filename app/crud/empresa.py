@@ -1,14 +1,14 @@
 import uuid
-from typing import Sequence
+from collections.abc import Sequence
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from app.models.candidatura import Candidatura
 from app.models.empresa import Empresa
+from app.models.enums import StatusEmpresa
 from app.models.recrutador import Recrutador
 from app.models.vaga import Vaga
-from app.models.candidatura import Candidatura
-from app.models.enums import StatusEmpresa
 from app.schemas.empresa import EmpresaCreate, EmpresaUpdate
 
 
@@ -45,11 +45,11 @@ def get_empresa_by_cnpj(db: Session, cnpj: str) -> Empresa | None:
 
 
 def get_empresas(
-    db: Session, 
-    skip: int = 0, 
+    db: Session,
+    skip: int = 0,
     limit: int = 100,
     status: StatusEmpresa | None = None,
-    busca: str | None = None
+    busca: str | None = None,
 ) -> Sequence[Empresa]:
     stmt = (
         select(
@@ -66,13 +66,10 @@ def get_empresas(
 
     if status:
         stmt = stmt.where(Empresa.status == status)
-    
+
     if busca:
         stmt = stmt.where(
-            or_(
-                Empresa.nome.ilike(f"%{busca}%"),
-                Empresa.cnpj.ilike(f"%{busca}%")
-            )
+            or_(Empresa.nome.ilike(f"%{busca}%"), Empresa.cnpj.ilike(f"%{busca}%"))
         )
 
     results = db.execute(stmt.offset(skip).limit(limit)).all()

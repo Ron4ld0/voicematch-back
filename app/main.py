@@ -10,20 +10,20 @@ from app.core.audio import ensure_audio_dir_exists
 from app.core.config import settings
 from app.core.database import SessionLocal, get_db
 from app.core.seed import seed_admin_user
+from app.routers.admin import router as admin_router
 from app.routers.audio import router as audio_router
 
 # Routers
 from app.routers.auth import router as auth_router
 from app.routers.candidato import router as candidato_router
 from app.routers.candidatura import router as candidatura_router
+from app.routers.empresa import router as empresa_router
 from app.routers.entrevista import router as entrevista_router
 from app.routers.grupo_habilidade import router as grupo_habilidade_router
 from app.routers.habilidade import router as habilidade_router
 from app.routers.relatorio import router as relatorio_router
 from app.routers.usuario import router as usuario_router
 from app.routers.vaga import router as vaga_router
-from app.routers.empresa import router as empresa_router
-from app.routers.admin import router as admin_router
 from app.seeds.seed_grupos_habilidades import seed_grupos_habilidades
 from app.seeds.seed_habilidades import seed_habilidades
 

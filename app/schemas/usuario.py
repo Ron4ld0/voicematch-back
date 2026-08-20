@@ -1,9 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
-
-from app.core.validators import validar_cnpj
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # Sub-esquema de Recrutador

@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.crud.usuario import get_usuario_by_email
+from app.models.enums import TipoUsuario
 from app.models.usuario import Usuario
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -51,9 +53,6 @@ def get_current_user(
         raise credentials_exception
     return user
 
-
-import uuid
-from app.models.enums import TipoUsuario
 
 def get_current_tenant(current_user: Usuario = Depends(get_current_user)) -> uuid.UUID:
     if not current_user.recrutador or not current_user.recrutador.empresa_id:

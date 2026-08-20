@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.curriculo import save_curriculo_file
 from app.core.database import get_db
+from app.core.security import get_current_tenant
 from app.crud.candidato import (
     create_candidato,
     delete_candidato,
@@ -14,10 +15,6 @@ from app.crud.candidato import (
     update_candidato,
 )
 from app.schemas.candidato import CandidatoCreate, CandidatoResponse, CandidatoUpdate
-
-from app.core.security import get_current_tenant
-from app.models.enums import TipoUsuario
-from app.core.security import get_admin_user
 
 router = APIRouter(prefix="/candidatos", tags=["Candidatos"])
 
@@ -31,6 +28,7 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
         raise HTTPException(status_code=400, detail="vaga_id_referencia é obrigatório")
 
     from app.models.vaga import Vaga
+
     db_vaga = db.query(Vaga).filter(Vaga.id == candidato_in.vaga_id_referencia).first()
     if not db_vaga:
         raise HTTPException(status_code=400, detail="Vaga de referência não encontrada")
@@ -38,7 +36,9 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
     empresa_id = db_vaga.empresa_id
 
     # Verificando se já existe um candidato com este email
-    db_candidato = get_candidato_by_email(db, email=candidato_in.email, empresa_id=empresa_id)
+    db_candidato = get_candidato_by_email(
+        db, email=candidato_in.email, empresa_id=empresa_id
+    )
     if db_candidato:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -46,16 +46,18 @@ def register_candidato(candidato_in: CandidatoCreate, db: Session = Depends(get_
         )
 
     # Criar o perfil do candidato
-    db_candidato = create_candidato(db, candidato_in=candidato_in, empresa_id=empresa_id)
+    db_candidato = create_candidato(
+        db, candidato_in=candidato_in, empresa_id=empresa_id
+    )
     return db_candidato
 
 
 @router.get("", response_model=list[CandidatoResponse])
 def list_candidatos(
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = 0,
+    limit: int = 100,
     db: Session = Depends(get_db),
-    tenant_id: UUID = Depends(get_current_tenant)
+    tenant_id: UUID = Depends(get_current_tenant),
 ):
     """Lista todos os candidatos da empresa atual."""
     return get_candidatos(db, skip=skip, limit=limit, empresa_id=tenant_id)
@@ -63,9 +65,9 @@ def list_candidatos(
 
 @router.get("/{id}", response_model=CandidatoResponse)
 def read_candidato(
-    id: UUID, 
+    id: UUID,
     db: Session = Depends(get_db),
-    tenant_id: UUID = Depends(get_current_tenant)
+    tenant_id: UUID = Depends(get_current_tenant),
 ):
     """Retorna os dados de um candidato pelo ID (se pertencer à empresa atual)."""
     db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
@@ -78,10 +80,10 @@ def read_candidato(
 
 @router.put("/{id}", response_model=CandidatoResponse)
 def modify_candidato(
-    id: UUID, 
-    candidato_in: CandidatoUpdate, 
+    id: UUID,
+    candidato_in: CandidatoUpdate,
     db: Session = Depends(get_db),
-    tenant_id: UUID = Depends(get_current_tenant)
+    tenant_id: UUID = Depends(get_current_tenant),
 ):
     """Atualiza os dados de um candidato da empresa."""
     db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
@@ -94,9 +96,9 @@ def modify_candidato(
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_candidato(
-    id: UUID, 
+    id: UUID,
     db: Session = Depends(get_db),
-    tenant_id: UUID = Depends(get_current_tenant)
+    tenant_id: UUID = Depends(get_current_tenant),
 ):
     """Remove um candidato da empresa."""
     db_candidato = get_candidato(db, candidato_id=id, empresa_id=tenant_id)
@@ -105,7 +107,7 @@ def remove_candidato(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Candidato não encontrado para deleção.",
         )
-    success = delete_candidato(db, candidato_id=id)
+    delete_candidato(db, candidato_id=id)
 
 
 @router.post(

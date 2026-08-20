@@ -26,9 +26,9 @@ router = APIRouter(prefix="/habilidades", tags=["Habilidades"])
     "/", response_model=HabilidadeResponse, status_code=status.HTTP_201_CREATED
 )
 def cadastrar_habilidade(
-    habilidade_in: HabilidadeCreate, 
+    habilidade_in: HabilidadeCreate,
     db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    tenant_id: uuid.UUID = Depends(get_current_tenant),
 ):
     """
     Cadastra uma nova habilidade local (vinculada à empresa do usuário logado).
@@ -44,12 +44,14 @@ def listar_habilidades(
     nome: str | None = None,
     tipo: TipoHabilidadeEnum | None = None,
     db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    tenant_id: uuid.UUID = Depends(get_current_tenant),
 ):
     """
     Lista as habilidades cadastradas (Globais e Locais) com paginação, busca textual e filtro por tipo.
     """
-    return get_habilidades(db=db, skip=skip, limit=limit, nome=nome, tipo=tipo, empresa_id=tenant_id)
+    return get_habilidades(
+        db=db, skip=skip, limit=limit, nome=nome, tipo=tipo, empresa_id=tenant_id
+    )
 
 
 @router.put("/{habilidade_id}", response_model=HabilidadeResponse)
@@ -57,7 +59,7 @@ def atualizar_habilidade(
     habilidade_id: uuid.UUID,
     habilidade_in: HabilidadeUpdate,
     db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    tenant_id: uuid.UUID = Depends(get_current_tenant),
 ):
     """
     Atualiza os dados de uma habilidade existente.
@@ -71,7 +73,8 @@ def atualizar_habilidade(
 
     if db_habilidade.empresa_id != tenant_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Você não pode editar uma habilidade global ou de outra empresa."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não pode editar uma habilidade global ou de outra empresa.",
         )
 
     return update_habilidade(
@@ -81,9 +84,9 @@ def atualizar_habilidade(
 
 @router.delete("/{habilidade_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remover_habilidade(
-    habilidade_id: uuid.UUID, 
+    habilidade_id: uuid.UUID,
     db: Session = Depends(get_db),
-    tenant_id: uuid.UUID = Depends(get_current_tenant)
+    tenant_id: uuid.UUID = Depends(get_current_tenant),
 ):
     """
     Remove uma habilidade do catálogo.
@@ -97,7 +100,8 @@ def remover_habilidade(
 
     if db_habilidade.empresa_id != tenant_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Você não pode remover uma habilidade global ou de outra empresa."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não pode remover uma habilidade global ou de outra empresa.",
         )
 
     delete_habilidade(db=db, db_habilidade=db_habilidade)

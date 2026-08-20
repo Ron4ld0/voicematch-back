@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from app.models.candidatura import Candidatura
 
-from sqlalchemy import String, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,11 +26,9 @@ class Candidato(Base):
     empresa_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("empresa.id", ondelete="CASCADE"), nullable=False
     )
-    
+
     nome: Mapped[str] = mapped_column(String(255), nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(255), nullable=False, index=True
-    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     telefone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     curriculo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     resumo_profissional: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -38,12 +36,10 @@ class Candidato(Base):
     tecnologias: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
     # Relacionamento N:1 com Empresa
-    empresa: Mapped["Empresa"] = relationship(
-        "Empresa", back_populates="candidatos"
-    )
+    empresa: Mapped[Empresa] = relationship("Empresa", back_populates="candidatos")
 
     # Relacionamento 1:N com Candidatura
-    candidaturas: Mapped[list["Candidatura"]] = relationship(
+    candidaturas: Mapped[list[Candidatura]] = relationship(
         "Candidatura", back_populates="candidato", cascade="all, delete-orphan"
     )
 
